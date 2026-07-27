@@ -137,7 +137,7 @@ class ProcessWebhookJob < ApplicationJob
     ticket.status = "open"
     ticket.last_customer_message_at = Time.current
     ticket.save!
-    ack = "Thanks — a support agent will look into this and get back to you within 1–3 business days (Ticket ##{ticket.id})."
+    ack = "Thanks for reaching out. I've passed this to our support team — a human agent will personally review your message and reply within 1–3 business days. (Ticket ##{ticket.id})"
     client.send_message(sender_id, { text: ack }, access_token: access_token)
   end
 
@@ -181,7 +181,7 @@ class ProcessWebhookJob < ApplicationJob
       # Automated acknowledgement only — NO HUMAN_AGENT tag. This is an instant
       # bot reply inside the 24h window. The tag is reserved for the human agent
       # replying from the operator desk (Meta policy: tag must be human-sent).
-      reply_text = "Thanks — a support agent will look into this and get back to you within 1–3 business days (Ticket ##{ticket.id})."
+      reply_text = "Thanks for reaching out. I've passed this to our support team — a human agent will personally review your message and reply within 1–3 business days. (Ticket ##{ticket.id})"
       client.send_message(sender_id, { text: reply_text }, access_token: access_token)
     end
   end
