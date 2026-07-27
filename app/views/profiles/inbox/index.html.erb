@@ -1,6 +1,6 @@
 <div class="page-head">
   <h2>Inbox</h2>
-  <p class="muted">Customers who’ve messaged your pages, and conversations that need a human.</p>
+  <p class="muted">Chat with customers who’ve messaged your pages, and handle conversations that need a human.</p>
 </div>
 
 <div class="tabs">
@@ -8,86 +8,85 @@
   <a href="/orders/tickets">Needs a human</a>
 </div>
 
-<div class="card" style="margin-bottom: 1.5rem;">
-  <h3 style="margin-top:0;">Load history from Facebook</h3>
-  <% if @connected_pages.any? %>
-    <p class="muted" style="font-size:0.9rem;">Pull past conversation threads for a connected page.</p>
-    <%= form_with url: profiles_inbox_path, method: :get, local: true, style: "display:flex; gap:0.5rem; align-items:center;" do |f| %>
-      <select name="page_id" required style="padding:0.6rem; border-radius:4px; border:1px solid var(--border-color); background:#0f172a; color:white; flex-grow:1;">
-        <option value="">Select a page…</option>
-        <% @connected_pages.each do |page| %>
-          <option value="<%= page.page_id %>" <%= 'selected' if params[:page_id] == page.page_id %>><%= page.name %></option>
-        <% end %>
-      </select>
-      <button type="submit" class="btn">Load history</button>
-    <% end %>
-
-    <% if @conversations_response.present? %>
-      <% threads = @conversations_response["data"] || [] %>
-      <div style="margin-top:1.5rem;">
-        <% if threads.any? %>
-          <% threads.each do |thread| %>
-            <% msgs = thread.dig("messages", "data") || [] %>
-            <div style="border:1px solid var(--border-color); border-radius:8px; padding:1rem; margin-bottom:0.75rem; background:rgba(0,0,0,0.2);">
-              <div class="muted" style="font-size:0.8rem; margin-bottom:0.5rem;">
-                Updated <%= thread["updated_time"] %> · <%= msgs.size %> message<%= 's' unless msgs.size == 1 %>
-              </div>
-              <% msgs.first(5).each do |m| %>
-                <div style="margin-bottom:0.35rem;">
-                  <strong style="font-size:0.85rem;"><%= m.dig("from", "name") || "Customer" %>:</strong>
-                  <span style="font-size:0.9rem;"><%= m["message"].presence || "(no text)" %></span>
-                </div>
-              <% end %>
-            </div>
-          <% end %>
-        <% else %>
-          <p class="muted">No conversation history returned for this page yet.</p>
-        <% end %>
-
-        <% if Rails.env.development? %>
-          <details class="dev-note">
-            <summary>Developer: raw Conversations API response</summary>
-            <pre style="font-size:0.8rem; color:#38bdf8; max-height:300px; overflow:auto;"><%= JSON.pretty_generate(@conversations_response) %></pre>
-          </details>
-        <% end %>
-      </div>
-    <% end %>
-  <% else %>
+<% if @page.nil? %>
+  <div class="card">
     <div class="empty">
       <div class="icon">🔌</div>
-      <p>Connect a page first to load history. <a href="/onboarding/connect" style="color:var(--primary-color);">Go to Connections →</a></p>
+      <p>Connect a page to start chatting with customers. <a href="/onboarding/connect" style="color:var(--primary-color);">Go to Connections →</a></p>
     </div>
-  <% end %>
-</div>
+  </div>
+<% else %>
+  <div style="display:grid; grid-template-columns: 300px 1fr; gap:1rem; align-items:start;">
 
-<div class="card">
-  <h3 style="margin-top:0;">Customers</h3>
-  <% if @profiles.any? %>
-    <div style="display: flex; flex-direction: column; gap: 1rem;">
-      <% @profiles.each do |profile| %>
-        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(0,0,0,0.2);">
-          <% if profile.profile_pic.present? %>
-            <img src="<%= profile.profile_pic %>" alt="<%= profile.full_name %>" style="width: 54px; height: 54px; border-radius: 50%; object-fit: cover;">
+    <!-- Customer list -->
+    <div class="card" style="padding:0.5rem; max-height:70vh; overflow-y:auto;">
+      <% if @profiles.any? %>
+        <% @profiles.each do |profile| %>
+          <% active = (@active_psid == profile.psid) %>
+          <a href="<%= profiles_inbox_path(psid: profile.psid) %>"
+             style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; border-radius:8px; text-decoration:none; color:var(--text-main); <%= 'background:rgba(59,130,246,0.15);' if active %>">
+            <% if profile.profile_pic.present? %>
+              <img src="<%= profile.profile_pic %>" alt="" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+            <% else %>
+              <div style="width:40px; height:40px; border-radius:50%; background:#3b82f6; display:flex; align-items:center; justify-content:center; font-weight:bold;"><%= profile.first_name&.first || "U" %></div>
+            <% end %>
+            <div style="min-width:0;">
+              <div style="font-weight:600; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= profile.full_name %></div>
+              <div class="muted" style="font-size:0.75rem;"><%= profile.locale || 'en_US' %></div>
+            </div>
+          </a>
+        <% end %>
+      <% else %>
+        <div class="empty" style="padding:1.5rem 1rem;"><div class="icon">💬</div><p style="font-size:0.9rem;">No customers yet.</p></div>
+      <% end %>
+    </div>
+
+    <!-- Chat pane -->
+    <div class="card" style="display:flex; flex-direction:column; height:70vh; padding:0;">
+      <% if @active_psid %>
+        <!-- Header -->
+        <div style="padding:1rem 1.25rem; border-bottom:1px solid var(--border-color);">
+          <strong style="font-size:1.05rem;"><%= @active_profile&.full_name || "Customer" %></strong>
+        </div>
+
+        <!-- Messages -->
+        <div style="flex:1; overflow-y:auto; padding:1.25rem; display:flex; flex-direction:column; gap:0.6rem;">
+          <% if @thread.blank? %>
+            <div class="empty" style="margin:auto;"><div class="icon">👋</div><p>No messages loaded yet. Say hello below.</p></div>
           <% else %>
-            <div style="width: 54px; height: 54px; border-radius: 50%; background: #3b82f6; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;">
-              <%= profile.first_name&.first || "U" %>
-            </div>
+            <% @thread.each do |m| %>
+              <% outgoing = m.dig("from", "id").to_s == @page.page_id.to_s %>
+              <div style="max-width:70%; align-self:<%= outgoing ? 'flex-end' : 'flex-start' %>;">
+                <div style="padding:0.6rem 0.9rem; border-radius:14px; font-size:0.95rem;
+                            background:<%= outgoing ? 'var(--primary-color)' : '#334155' %>; color:white;
+                            border-<%= outgoing ? 'bottom-right' : 'bottom-left' %>-radius:4px;">
+                  <%= m["message"].presence || "(no text)" %>
+                </div>
+                <div class="muted" style="font-size:0.7rem; margin-top:0.2rem; text-align:<%= outgoing ? 'right' : 'left' %>;">
+                  <%= m.dig("from", "name") || (outgoing ? "You" : "Customer") %> · <%= m["created_time"] %>
+                </div>
+              </div>
+            <% end %>
           <% end %>
-          <div style="flex-grow: 1;">
-            <div style="font-weight: bold; font-size: 1.1rem;"><%= profile.full_name %></div>
-            <div class="muted" style="font-size: 0.85rem;">
-              <%= profile.locale || 'en_US' %>
-              <% if Rails.env.development? %> · <code><%= profile.psid %></code><% end %>
-            </div>
-          </div>
-          <span class="badge badge-green">Verified</span>
+        </div>
+
+        <!-- Reply box -->
+        <%= form_with url: profiles_inbox_reply_path, method: :post, local: true, style: "border-top:1px solid var(--border-color); padding:0.75rem; display:flex; gap:0.5rem;" do %>
+          <input type="hidden" name="psid" value="<%= @active_psid %>">
+          <input type="text" name="body" placeholder="Type a message…" autocomplete="off" autofocus
+                 style="flex:1; padding:0.7rem 0.9rem; border-radius:8px; border:1px solid var(--border-color); background:#0f172a; color:white;">
+          <button type="submit" class="btn">Send</button>
+        <% end %>
+      <% else %>
+        <div class="empty" style="margin:auto;">
+          <div class="icon">💬</div>
+          <p>Select a customer to open the conversation.</p>
         </div>
       <% end %>
     </div>
-  <% else %>
-    <div class="empty">
-      <div class="icon">💬</div>
-      <p>No customers yet. When someone messages your page, they’ll appear here.</p>
-    </div>
-  <% end %>
-</div>
+  </div>
+
+  <p class="muted" style="font-size:0.8rem; margin-top:0.75rem;">
+    Replies send instantly via Messenger. Meta only allows standard replies within 24 hours of the customer’s last message — after that, use <a href="/orders/tickets" style="color:var(--primary-color);">Needs a human</a>.
+  </p>
+<% end %>

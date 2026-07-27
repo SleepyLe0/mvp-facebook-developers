@@ -40,6 +40,22 @@ class MetaGraphClient
     response.body
   end
 
+  # Fetch a single customer's message thread with the page (for the chat view).
+  # Returns the messages array (Graph returns newest-first).
+  def get_conversation_messages(page_id, psid, access_token: nil)
+    token = access_token.presence || default_page_token
+    endpoint = "/#{version}/#{page_id}/conversations"
+
+    response = @conn.get(endpoint) do |req|
+      req.params["user_id"] = psid
+      req.params["fields"] = "messages{id,message,from,created_time}"
+      req.params["access_token"] = token
+    end
+
+    log_response("get_conversation_messages", response)
+    (response.body.dig("data", 0, "messages", "data") || [])
+  end
+
   # Fetch authenticated Facebook User profile (id, name)
   def get_me(user_access_token)
     endpoint = "/#{version}/me"

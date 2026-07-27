@@ -36,6 +36,7 @@ Rails.application.routes.draw do
     get "webhook", to: "webhooks#verify"
     post "webhook", to: "webhooks#create"
     get "inbox", to: "inbox#index"
+    post "inbox/reply", to: "inbox#reply", as: :inbox_reply
   end
 
   # Flow 4: Page Connect / Onboarding Flow
