@@ -1,5 +1,7 @@
 module Orders
   class TicketsController < ApplicationController
+    before_action :require_user!
+
     def index
       @tickets = SupportTicket.recent
     end

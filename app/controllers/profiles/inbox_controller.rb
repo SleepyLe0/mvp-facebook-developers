@@ -1,8 +1,10 @@
 module Profiles
   class InboxController < ApplicationController
+    before_action :require_user!
+
     def index
       @profiles = UserProfile.order(updated_at: :desc)
-      @connected_pages = ConnectedPage.all
+      @connected_pages = current_user.connected_pages
 
       # Boss Requirement #2: If user clicks "Fetch Meta Chat History"
       if params[:page_id].present?

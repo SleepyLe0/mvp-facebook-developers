@@ -1,7 +1,9 @@
 class AutomationsController < ApplicationController
+  before_action :require_user!
+
   def index
     @faqs = FaqEntry.all
-    @ig_pages = ConnectedPage.where.not(instagram_business_account_id: [nil, ""])
-    @all_pages = ConnectedPage.all
+    @all_pages = current_user.connected_pages
+    @ig_pages = @all_pages.where.not(instagram_business_account_id: [nil, ""])
   end
 end
