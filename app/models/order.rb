@@ -1,5 +1,6 @@
 class Order < ApplicationRecord
-  validates :order_number, :status, presence: true, uniqueness: true
+  validates :order_number, presence: true, uniqueness: true
+  validates :status, presence: true
 
   def self.find_by_query(text)
     return nil if text.blank?
