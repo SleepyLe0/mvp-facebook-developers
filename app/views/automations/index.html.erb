@@ -1,0 +1,82 @@
+<div class="page-head">
+  <h2>Automations</h2>
+  <p class="muted">The questions ReplyDesk answers automatically, so your team only handles what really needs a person.</p>
+</div>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h3 style="margin:0;">💬 Messenger auto-replies</h3>
+    <span class="badge badge-blue"><%= @faqs.size %> rules</span>
+  </div>
+  <p class="muted" style="font-size:0.9rem;">When a customer’s message matches one of these, ReplyDesk replies instantly.</p>
+  <% if @faqs.any? %>
+    <table>
+      <thead><tr><th>When a customer asks about…</th><th>ReplyDesk answers</th></tr></thead>
+      <tbody>
+        <% @faqs.each do |faq| %>
+          <tr>
+            <td style="width:35%;">
+              <strong><%= faq.question %></strong>
+              <% if faq.respond_to?(:keywords) && faq.keywords.present? %>
+                <div class="muted" style="font-size:0.75rem;">Triggers: <%= faq.keywords %></div>
+              <% end %>
+            </td>
+            <td class="muted"><%= faq.answer %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="empty"><div class="icon">🤖</div><p>No auto-reply rules yet.</p></div>
+  <% end %>
+</div>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+  <h3 style="margin-top:0;">📸 Instagram DM auto-replies</h3>
+  <p class="muted" style="font-size:0.9rem;">Incoming Instagram DMs get an instant menu that routes creators and brands to the right place.</p>
+  <table>
+    <thead><tr><th>When someone mentions…</th><th>ReplyDesk answers</th></tr></thead>
+    <tbody>
+      <tr><td><strong>“brand”</strong></td><td class="muted">Shares brand-partnership info and the partnerships contact.</td></tr>
+      <tr><td><strong>“creator”</strong></td><td class="muted">Invites them to submit a portfolio for collaboration.</td></tr>
+      <tr><td><strong>Anything else</strong></td><td class="muted">Sends a welcome menu with “I’m a Brand” / “I’m a Creator” options.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">Instagram accounts</h3>
+  <% if @all_pages.any? %>
+    <p class="muted" style="font-size:0.9rem;">Link an Instagram professional account to a connected page to enable DM automations.</p>
+    <table>
+      <thead><tr><th>Page</th><th>Instagram</th><th></th></tr></thead>
+      <tbody>
+        <% @all_pages.each do |page| %>
+          <tr>
+            <td><strong><%= page.name %></strong></td>
+            <td>
+              <% if page.instagram_business_account_id.present? %>
+                <span class="badge badge-green">Linked</span>
+              <% else %>
+                <span class="muted">Not linked</span>
+              <% end %>
+            </td>
+            <td style="text-align:right;">
+              <%= form_with url: instagram_fetch_ig_account_path, method: :post, local: true do |f| %>
+                <input type="hidden" name="page_id" value="<%= page.page_id %>">
+                <button type="submit" class="btn btn-secondary" style="font-size:0.85rem;">
+                  <%= page.instagram_business_account_id.present? ? "Re-check" : "Link Instagram" %>
+                </button>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="empty">
+      <div class="icon">🔌</div>
+      <p>Connect a Facebook Page first. <a href="/onboarding/connect" style="color:var(--primary-color);">Go to Connections →</a></p>
+    </div>
+  <% end %>
+</div>

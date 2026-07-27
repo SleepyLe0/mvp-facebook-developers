@@ -1,0 +1,43 @@
+<div class="page-head">
+  <h2>Choose a page to connect</h2>
+  <p class="muted">Pick the Facebook Page you want ReplyDesk to manage. We’ll set up its webhooks automatically.</p>
+</div>
+
+<div class="card">
+  <% if @pages.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Page</th>
+          <th>Category</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @pages.each do |p| %>
+          <tr>
+            <td>
+              <strong><%= p['name'] %></strong>
+              <% if Rails.env.development? %><div class="muted" style="font-size:0.75rem;"><%= p['id'] %></div><% end %>
+            </td>
+            <td class="muted"><%= p['category'] %></td>
+            <td style="text-align:right;">
+              <%= form_with url: onboarding_subscribe_path, method: :post, local: true do |f| %>
+                <input type="hidden" name="page_id" value="<%= p['id'] %>">
+                <input type="hidden" name="page_name" value="<%= p['name'] %>">
+                <input type="hidden" name="page_access_token" value="<%= p['access_token'] %>">
+                <button type="submit" class="btn">Connect this page</button>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="empty"><div class="icon">🤔</div><p>No manageable pages were returned for this account.</p></div>
+  <% end %>
+
+  <div style="margin-top:1.5rem;">
+    <a href="/onboarding/connect" class="btn btn-secondary">← Back to Connections</a>
+  </div>
+</div>

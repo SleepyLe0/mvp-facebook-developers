@@ -1,0 +1,49 @@
+<div style="display:flex; justify-content:space-between; align-items:center;" class="page-head">
+  <div>
+    <h2>Activity</h2>
+    <p class="muted">Every message and event ReplyDesk has received from your pages.</p>
+  </div>
+  <div>
+    <%= button_to "Clear", clear_webhook_logs_path, method: :delete, class: "btn btn-secondary", data: { confirm: "Clear all activity?" } %>
+  </div>
+</div>
+
+<div class="card">
+  <% if @logs.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Channel</th>
+          <th>Status</th>
+          <th>Notes</th>
+          <% if Rails.env.development? %><th>Payload</th><% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% @logs.each do |log| %>
+          <tr>
+            <td><%= log.created_at.strftime("%b %-d, %H:%M:%S") %></td>
+            <td><%= log.event_type.to_s.titleize %></td>
+            <td>
+              <span class="badge <%= log.status == 'completed' ? 'badge-green' : (log.status == 'processing' ? 'badge-blue' : 'badge-orange') %>">
+                <%= log.status.to_s.titleize %>
+              </span>
+            </td>
+            <td style="color:#f87171; font-size:0.85rem;"><%= log.error_message %></td>
+            <% if Rails.env.development? %>
+              <td>
+                <details>
+                  <summary style="cursor:pointer; color:var(--primary-color);">View JSON</summary>
+                  <pre style="font-size:0.75rem; background:#0f172a; padding:0.5rem; border-radius:4px; max-width:400px; overflow-x:auto;"><%= log.payload %></pre>
+                </details>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="empty"><div class="icon">🕊️</div><p>No activity yet.</p></div>
+  <% end %>
+</div>

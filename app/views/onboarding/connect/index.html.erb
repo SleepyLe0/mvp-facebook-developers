@@ -1,0 +1,64 @@
+<div class="page-head">
+  <h2>Connections</h2>
+  <p class="muted">Link a Facebook Page so ReplyDesk can receive and reply to messages. We subscribe the webhooks for you automatically.</p>
+</div>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+  <h3 style="margin-top:0;">Connect a Facebook Page</h3>
+  <p class="muted">Sign in with Facebook and pick the Page you want ReplyDesk to manage.</p>
+  <a href="<%= @oauth_url %>" class="btn" style="background:#1877f2;">
+    Connect with Facebook
+  </a>
+
+  <% if Rails.env.development? %>
+    <details class="dev-note">
+      <summary>Developer: connect with a User Access Token</summary>
+      <%= form_with url: onboarding_callback_path, method: :get, local: true, style: "display:flex; gap:0.5rem; margin-top:0.75rem;" do |f| %>
+        <input type="text" name="user_access_token" placeholder="Paste User Access Token (EAA...)" required style="flex-grow:1; padding:0.5rem; border-radius:4px; border:1px solid var(--border-color); background:#0f172a; color:white;">
+        <button type="submit" class="btn btn-secondary">Fetch pages (/me/accounts)</button>
+      <% end %>
+    </details>
+  <% end %>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">Connected pages</h3>
+  <% if @connected_pages.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Page</th>
+          <th>Status</th>
+          <th>Instagram</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @connected_pages.each do |page| %>
+          <tr>
+            <td>
+              <strong><%= page.name %></strong>
+              <% if Rails.env.development? %><div class="muted" style="font-size:0.75rem;"><%= page.page_id %></div><% end %>
+            </td>
+            <td>
+              <span class="badge <%= page.subscribed ? 'badge-green' : 'badge-orange' %>">
+                <%= page.subscribed ? 'Active' : 'Not connected' %>
+              </span>
+            </td>
+            <td>
+              <% if page.instagram_business_account_id.present? %>
+                <span class="badge badge-green">Linked</span>
+              <% else %>
+                <span class="muted">Not linked</span>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="empty">
+      <div class="icon">🔌</div>
+      <p>No pages connected yet. Use <strong>Connect with Facebook</strong> above to get started.</p>
+    </div>
+  <% end %>
+</div>

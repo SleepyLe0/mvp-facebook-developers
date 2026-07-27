@@ -1,0 +1,93 @@
+<div class="page-head">
+  <h2>Inbox</h2>
+  <p class="muted">Customers who’ve messaged your pages, and conversations that need a human.</p>
+</div>
+
+<div class="tabs">
+  <a href="/profiles/inbox">Conversations</a>
+  <a href="/orders/tickets" class="active">Needs a human</a>
+</div>
+
+<div class="card">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h3 style="margin:0;">Escalated conversations</h3>
+    <span class="muted" style="font-size:0.85rem;">🔒 Human verification required to reply</span>
+  </div>
+  <% if @tickets.any? %>
+    <div style="display:flex; flex-direction:column; gap:1.5rem; margin-top:1rem;">
+      <% @tickets.each do |ticket| %>
+        <div style="border:1px solid var(--border-color); border-radius:8px; padding:1.5rem; background:rgba(0,0,0,0.2);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <div>
+              <strong style="font-size:1.1rem;">Conversation #<%= ticket.id %></strong>
+              <% if Rails.env.development? %>
+                <span class="muted" style="font-size:0.85rem; margin-left:0.5rem;">Customer PSID: <code><%= ticket.psid %></code></span>
+              <% end %>
+            </div>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <span class="badge badge-orange">Outside 24h window</span>
+              <span class="badge <%= ticket.status == 'open' ? 'badge-orange' : 'badge-green' %>">
+                <%= ticket.status.to_s.titleize %>
+              </span>
+            </div>
+          </div>
+
+          <div style="background:#0f172a; padding:1rem; border-radius:6px; margin-bottom:1rem; border-left:3px solid #f97316;">
+            <div class="muted" style="font-size:0.8rem; font-weight:bold; margin-bottom:0.2rem;">LATEST MESSAGE</div>
+            <div style="font-size:1rem; color:white;">"<%= ticket.last_message %>"</div>
+            <div class="muted" style="font-size:0.75rem; margin-top:0.4rem;">
+              Received <%= ticket.created_at.strftime("%b %-d, %H:%M") %>
+            </div>
+          </div>
+
+          <% if ticket.human_agent_notes.present? %>
+            <div style="background:rgba(34, 197, 94, 0.1); border:1px solid var(--accent-green); padding:0.8rem; border-radius:6px; margin-bottom:1rem; color:#4ade80; font-size:0.85rem;">
+              <strong>Reply sent:</strong> <%= ticket.human_agent_notes %>
+            </div>
+          <% end %>
+
+          <%= form_with url: orders_reply_ticket_path(ticket), method: :post, local: true do |f| %>
+            <div style="background:rgba(255,255,255,0.03); padding:1rem; border-radius:6px; border:1px dashed var(--border-color);">
+              <h4 style="margin:0 0 0.8rem 0; color:var(--primary-color);">Reply as a human agent</h4>
+
+              <div style="display:grid; grid-template-columns: 1fr 2fr; gap:1rem; margin-bottom:1rem;">
+                <div>
+                  <label style="display:block; font-size:0.85rem; font-weight:bold; margin-bottom:0.3rem;">Category</label>
+                  <select name="category" required style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid var(--border-color); background:#0f172a; color:white;">
+                    <option value="Order Issue">📦 Order Issue / Damage</option>
+                    <option value="Product Support">🛠 Product Support</option>
+                    <option value="Billing Inquiry">💳 Billing &amp; Refunds</option>
+                    <option value="General Support">💬 General Support</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style="display:block; font-size:0.85rem; font-weight:bold; margin-bottom:0.3rem;">Your reply</label>
+                  <input type="text" name="reply_text" placeholder="Type a personal reply to the customer…" required style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid var(--border-color); background:#0f172a; color:white; box-sizing:border-box;">
+                </div>
+              </div>
+
+              <div style="margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; background:rgba(249, 115, 22, 0.1); padding:0.6rem 0.8rem; border-radius:4px;">
+                <input type="checkbox" id="confirm_<%= ticket.id %>" name="human_confirmation" value="1" required style="width:18px; height:18px; cursor:pointer;">
+                <label for="confirm_<%= ticket.id %>" style="font-size:0.85rem; color:#fb923c; cursor:pointer;">
+                  <strong>I confirm I’m a human agent</strong> replying to this customer within the 7-day window using Meta’s Human Agent tag.
+                </label>
+              </div>
+
+              <div style="display:flex; justify-content:flex-end; align-items:center;">
+                <button type="submit" class="btn" style="background:#f97316;">
+                  Send reply →
+                </button>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="empty">
+      <div class="icon">✅</div>
+      <p>Nothing needs a human right now. When ReplyDesk can’t auto-answer a customer, it’ll show up here.</p>
+    </div>
+  <% end %>
+</div>

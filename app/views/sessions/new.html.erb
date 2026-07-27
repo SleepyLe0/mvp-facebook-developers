@@ -1,0 +1,25 @@
+<div style="max-width: 500px; margin: 4rem auto; text-align: center;">
+  <div class="card" style="padding: 2.5rem 2rem;">
+    <div style="font-size: 3rem; margin-bottom: 0.5rem;">💬</div>
+    <h2 style="margin-top:0; margin-bottom: 0.5rem;">Sign in to ReplyDesk</h2>
+    <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom: 2rem;">
+      Sign in with Facebook to connect your Pages and Instagram accounts — no separate password needed.
+    </p>
+
+    <!-- Official Facebook SSO Button -->
+    <a href="<%= facebook_login_path %>" class="btn" style="background-color: #1877f2; width: 100%; padding: 0.9rem; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 8px; box-sizing: border-box;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      Continue with Facebook
+    </a>
+
+    <% if Rails.env.development? %>
+      <details class="dev-note" style="margin-top: 2rem; text-align: left;">
+        <summary>Developer: sign in with a User Access Token</summary>
+        <%= form_with url: "/auth/facebook/callback", method: :get, local: true, style: "display:flex; gap:0.5rem; margin-top:0.75rem;" do |f| %>
+          <input type="text" name="user_access_token" placeholder="Paste User Access Token (EAA...)" required style="flex-grow:1; padding:0.5rem; border-radius:4px; border:1px solid var(--border-color); background:#0f172a; color:white; font-size:0.85rem;">
+          <button type="submit" class="btn btn-secondary" style="font-size:0.85rem;">Log In</button>
+        <% end %>
+      </details>
+    <% end %>
+  </div>
+</div>

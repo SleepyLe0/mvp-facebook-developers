@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ReplyDesk</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <style>
+      :root {
+        --bg-color: #0f172a;
+        --card-bg: #1e293b;
+        --border-color: #334155;
+        --primary-color: #3b82f6;
+        --primary-hover: #2563eb;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --accent-green: #22c55e;
+        --accent-orange: #f97316;
+        --accent-purple: #a855f7;
+      }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        line-height: 1.5;
+      }
+      .navbar {
+        background-color: var(--card-bg);
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .nav-links {
+        display: flex;
+        gap: 0.8rem;
+        align-items: center;
+      }
+      .nav-links a {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 500;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+      }
+      .nav-links a:hover {
+        color: var(--text-main);
+        background-color: rgba(255,255,255,0.05);
+      }
+      .container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+      .flash {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+      }
+      .flash-notice { background-color: rgba(34, 197, 94, 0.2); border: 1px solid var(--accent-green); color: #4ade80; }
+      .flash-alert { background-color: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #f87171; }
+      .card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      .btn {
+        display: inline-block;
+        background-color: var(--primary-color);
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+      }
+      .btn:hover { background-color: var(--primary-hover); }
+      .btn-secondary { background-color: #475569; }
+      .btn-secondary:hover { background-color: #334155; }
+      .badge {
+        display: inline-block;
+        padding: 0.25rem 0.6rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+      .badge-blue { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; }
+      .badge-green { background-color: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; }
+      .badge-orange { background-color: rgba(249, 115, 22, 0.2); color: #fb923c; border: 1px solid #f97316; }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+      }
+      th, td {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+      }
+      th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+      code { font-family: monospace; background: rgba(0,0,0,0.3); padding: 0.2rem 0.4rem; border-radius: 4px; color: #38bdf8; }
+      .muted { color: var(--text-muted); }
+      .page-head { margin-bottom: 1.5rem; }
+      .page-head h1, .page-head h2 { margin: 0 0 0.25rem; }
+      .nav-links a.active { color: var(--text-main); background-color: rgba(255,255,255,0.08); }
+      /* Hero / empty state */
+      .hero { text-align: center; padding: 3rem 1.5rem; }
+      .hero .icon { font-size: 3rem; margin-bottom: 0.5rem; }
+      .empty { text-align: center; padding: 2.5rem 1.5rem; color: var(--text-muted); }
+      .empty .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+      /* Stat row */
+      .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+      .stat { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 1.1rem 1.3rem; }
+      .stat .n { font-size: 1.6rem; font-weight: 700; }
+      .stat .l { color: var(--text-muted); font-size: 0.85rem; }
+      /* Tabs */
+      .tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
+      .tabs a { padding: 0.6rem 1rem; text-decoration: none; color: var(--text-muted); font-weight: 600; border-bottom: 2px solid transparent; }
+      .tabs a.active { color: var(--text-main); border-bottom-color: var(--primary-color); }
+      /* Dev-only technical detail block */
+      .dev-note { margin-top: 1.5rem; border: 1px dashed var(--border-color); border-radius: 8px; padding: 1rem; }
+      .dev-note summary { cursor: pointer; color: var(--text-muted); font-size: 0.85rem; }
+      details.history summary { cursor: pointer; color: var(--primary-color); font-weight: 600; }
+    </style>
+  </head>
+
+  <body>
+    <div class="navbar">
+      <a href="/" style="text-decoration:none; color:white; font-size:1.2rem; font-weight:bold;">
+        💬 ReplyDesk
+      </a>
+      <div class="nav-links">
+        <% nav = request.path %>
+        <a href="/" class="<%= 'active' if nav == '/' %>">Home</a>
+        <a href="/profiles/inbox" class="<%= 'active' if nav.start_with?('/profiles', '/orders') %>">Inbox</a>
+        <a href="/automations" class="<%= 'active' if nav.start_with?('/automations', '/instagram') %>">Automations</a>
+        <a href="/onboarding/connect" class="<%= 'active' if nav.start_with?('/onboarding') %>">Connections</a>
+        <a href="/webhook_logs" class="<%= 'active' if nav.start_with?('/webhook_logs') %>">Activity</a>
+
+        <% if logged_in? %>
+          <span style="color:var(--accent-green); font-size:0.85rem; font-weight:600; margin-left:0.5rem;">
+            👤 <%= current_user.display_name %>
+          </span>
+          <%= button_to "Sign Out", logout_path, method: :delete, class: "btn btn-secondary", style: "padding:0.3rem 0.7rem; font-size:0.8rem;" %>
+        <% else %>
+          <a href="<%= facebook_login_path %>" class="btn" style="background:#1877f2; padding:0.4rem 0.8rem; font-size:0.85rem;">
+            Facebook Login
+          </a>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="container">
+      <% if flash[:notice].present? %>
+        <div class="flash flash-notice"><%= flash[:notice] %></div>
+      <% end %>
+      <% if flash[:alert].present? %>
+        <div class="flash flash-alert"><%= flash[:alert] %></div>
+      <% end %>
+
+      <%= yield %>
+    </div>
+  </body>
+</html>
