@@ -4,13 +4,13 @@ class SessionsController < ApplicationController
   def new
     @app_id = ENV["FB_APP_ID"]
     @redirect_uri = "#{request.base_url}/auth/facebook/callback"
-    @oauth_url = "https://www.facebook.com/v20.0/dialog/oauth?client_id=#{@app_id}&redirect_uri=#{CGI.escape(@redirect_uri)}&scope=public_profile,pages_show_list,pages_manage_metadata,business_management,pages_messaging"
+    @oauth_url = "https://www.facebook.com/v20.0/dialog/oauth?client_id=#{@app_id}&redirect_uri=#{CGI.escape(@redirect_uri)}&scope=public_profile,pages_show_list,pages_manage_metadata,pages_messaging"
   end
 
   def facebook
     app_id = ENV["FB_APP_ID"]
     redirect_uri = "#{request.base_url}/auth/facebook/callback"
-    oauth_url = "https://www.facebook.com/v20.0/dialog/oauth?client_id=#{app_id}&redirect_uri=#{CGI.escape(redirect_uri)}&scope=public_profile,pages_show_list,pages_manage_metadata,business_management,pages_messaging"
+    oauth_url = "https://www.facebook.com/v20.0/dialog/oauth?client_id=#{app_id}&redirect_uri=#{CGI.escape(redirect_uri)}&scope=public_profile,pages_show_list,pages_manage_metadata,pages_messaging"
     redirect_to oauth_url, allow_other_host: true
   end
 

@@ -7,7 +7,7 @@ module Onboarding
       @connected_pages = current_user.connected_pages
       @app_id = ENV["FB_APP_ID"]
       @redirect_uri = "#{request.base_url}/onboarding/callback"
-      @oauth_url = "https://www.facebook.com/v20.0/dialog/oauth?client_id=#{@app_id}&redirect_uri=#{CGI.escape(@redirect_uri)}&scope=pages_show_list,pages_manage_metadata,business_management,pages_messaging"
+      @oauth_url = "https://www.facebook.com/v20.0/dialog/oauth?client_id=#{@app_id}&redirect_uri=#{CGI.escape(@redirect_uri)}&scope=pages_show_list,pages_manage_metadata,pages_messaging"
     end
 
     def callback
