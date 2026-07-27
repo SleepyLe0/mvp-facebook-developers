@@ -4,14 +4,38 @@ module Profiles
     before_action :set_page
 
     def index
-      @profiles = UserProfile.order(updated_at: :desc)
-      @active_psid = params[:psid].presence
+      @conversations = []
+      return if @page.nil?
 
-      if @active_psid && @page
-        @active_profile = UserProfile.find_by(psid: @active_psid)
-        client = MetaGraphClient.new
-        # Graph returns newest-first; show oldest-first like a normal chat
-        @thread = client.get_conversation_messages(@page.page_id, @active_psid, access_token: @page.access_token).reverse
+      client = MetaGraphClient.new
+      raw = client.get_page_conversations(@page.page_id, access_token: @page.access_token)
+
+      (raw["data"] || []).each do |thread|
+        parts = thread.dig("participants", "data") || []
+        customer = parts.find { |p| p["id"].to_s != @page.page_id.to_s } || parts.first
+        next unless customer
+
+        msgs = thread.dig("messages", "data") || []
+        @conversations << {
+          psid: customer["id"],
+          name: customer["name"] || "Customer",
+          snippet: msgs.first&.dig("message"),
+          updated_time: thread["updated_time"],
+          messages: msgs
+        }
+      end
+
+      # Auto-open the requested (or most recent) conversation
+      @active_psid = params[:psid].presence || @conversations.first&.dig(:psid)
+      active = @conversations.find { |c| c[:psid] == @active_psid }
+      @active_name = active&.dig(:name) || "Customer"
+      # Graph returns newest-first; show oldest-first like a normal chat
+      @thread = if active
+        (active[:messages] || []).reverse
+      elsif @active_psid
+        client.get_conversation_messages(@page.page_id, @active_psid, access_token: @page.access_token).reverse
+      else
+        []
       end
     end
 
@@ -39,7 +63,6 @@ module Profiles
     # ponytail: MVP has one connected page; pick per-conversation page if this goes multi-page
     def set_page
       @page = current_user.connected_pages.first
-      @connected_pages = current_user.connected_pages
     end
   end
 end

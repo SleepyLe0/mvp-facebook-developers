@@ -20,24 +20,20 @@
 
     <!-- Customer list -->
     <div class="card" style="padding:0.5rem; max-height:70vh; overflow-y:auto;">
-      <% if @profiles.any? %>
-        <% @profiles.each do |profile| %>
-          <% active = (@active_psid == profile.psid) %>
-          <a href="<%= profiles_inbox_path(psid: profile.psid) %>"
+      <% if @conversations.any? %>
+        <% @conversations.each do |c| %>
+          <% active = (@active_psid == c[:psid]) %>
+          <a href="<%= profiles_inbox_path(psid: c[:psid]) %>"
              style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; border-radius:8px; text-decoration:none; color:var(--text-main); <%= 'background:rgba(59,130,246,0.15);' if active %>">
-            <% if profile.profile_pic.present? %>
-              <img src="<%= profile.profile_pic %>" alt="" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-            <% else %>
-              <div style="width:40px; height:40px; border-radius:50%; background:#3b82f6; display:flex; align-items:center; justify-content:center; font-weight:bold;"><%= profile.first_name&.first || "U" %></div>
-            <% end %>
+            <div style="width:40px; height:40px; border-radius:50%; background:#3b82f6; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;"><%= c[:name].to_s.first || "U" %></div>
             <div style="min-width:0;">
-              <div style="font-weight:600; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= profile.full_name %></div>
-              <div class="muted" style="font-size:0.75rem;"><%= profile.locale || 'en_US' %></div>
+              <div style="font-weight:600; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= c[:name] %></div>
+              <div class="muted" style="font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= c[:snippet].presence || "…" %></div>
             </div>
           </a>
         <% end %>
       <% else %>
-        <div class="empty" style="padding:1.5rem 1rem;"><div class="icon">💬</div><p style="font-size:0.9rem;">No customers yet.</p></div>
+        <div class="empty" style="padding:1.5rem 1rem;"><div class="icon">💬</div><p style="font-size:0.9rem;">No conversations yet.</p></div>
       <% end %>
     </div>
 
@@ -46,7 +42,7 @@
       <% if @active_psid %>
         <!-- Header -->
         <div style="padding:1rem 1.25rem; border-bottom:1px solid var(--border-color);">
-          <strong style="font-size:1.05rem;"><%= @active_profile&.full_name || "Customer" %></strong>
+          <strong style="font-size:1.05rem;"><%= @active_name || "Customer" %></strong>
         </div>
 
         <!-- Messages -->
