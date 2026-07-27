@@ -47,15 +47,15 @@ module Orders
       # Send message using HUMAN_AGENT message tag for outside 24-hour window delivery
       response = client.send_message(ticket.psid, { text: reply_text }, tag: "HUMAN_AGENT", access_token: page&.access_token)
 
-      # Replying auto-takes-over: the bot goes quiet for this conversation.
-      ticket.update!(
-        handled_by_human: true,
-        human_agent_notes: "#{current_user.try(:display_name) || 'Agent'} [#{category}]: '#{reply_text}' (#{response.is_a?(Hash) && response['error'] ? response.dig('error', 'message') : 'sent'})"
-      )
-
       if response.is_a?(Hash) && response["error"]
+        # Nothing delivered — don't pause the bot or record a misleading note.
         flash[:alert] = "Couldn't send: #{response.dig('error', 'message')}"
       else
+        # Successful human reply auto-takes-over: the bot goes quiet here.
+        ticket.update!(
+          handled_by_human: true,
+          human_agent_notes: "#{current_user.try(:display_name) || 'Agent'} [#{category}]: '#{reply_text}'"
+        )
         flash[:notice] = "✅ Your reply was sent to the customer."
       end
       redirect_to orders_tickets_path
