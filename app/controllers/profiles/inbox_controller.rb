@@ -39,6 +39,28 @@ module Profiles
       end
     end
 
+    # Polled by the chat view for near-real-time updates.
+    # ponytail: 4s polling of Graph. Swap for Action Cable + webhook broadcast if you need instant push.
+    def messages
+      thread = []
+      if @page && params[:psid].present?
+        client = MetaGraphClient.new
+        thread = client.get_conversation_messages(@page.page_id, params[:psid], access_token: @page.access_token).reverse
+      end
+
+      render json: {
+        messages: thread.map { |m|
+          {
+            id: m["id"],
+            text: m["message"],
+            outgoing: m.dig("from", "id").to_s == @page&.page_id.to_s,
+            name: m.dig("from", "name"),
+            time: m["created_time"]
+          }
+        }
+      }
+    end
+
     def reply
       psid = params[:psid]
       body = params[:body].to_s.strip

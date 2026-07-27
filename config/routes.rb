@@ -36,6 +36,7 @@ Rails.application.routes.draw do
     get "webhook", to: "webhooks#verify"
     post "webhook", to: "webhooks#create"
     get "inbox", to: "inbox#index"
+    get "inbox/messages", to: "inbox#messages", as: :inbox_messages
     post "inbox/reply", to: "inbox#reply", as: :inbox_reply
   end
 

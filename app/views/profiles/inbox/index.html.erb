@@ -46,7 +46,10 @@
         </div>
 
         <!-- Messages -->
-        <div style="flex:1; overflow-y:auto; padding:1.25rem; display:flex; flex-direction:column; gap:0.6rem;">
+        <div id="chat-messages"
+             data-url="<%= profiles_inbox_messages_path %>"
+             data-psid="<%= @active_psid %>"
+             style="flex:1; overflow-y:auto; padding:1.25rem; display:flex; flex-direction:column; gap:0.6rem;">
           <% if @thread.blank? %>
             <div class="empty" style="margin:auto;"><div class="icon">👋</div><p>No messages loaded yet. Say hello below.</p></div>
           <% else %>
@@ -85,4 +88,40 @@
   <p class="muted" style="font-size:0.8rem; margin-top:0.75rem;">
     Replies send instantly via Messenger. Meta only allows standard replies within 24 hours of the customer’s last message — after that, use <a href="/orders/tickets" style="color:var(--primary-color);">Needs a human</a>.
   </p>
+
+  <script>
+    (function () {
+      var box = document.getElementById("chat-messages");
+      if (!box || !box.dataset.psid) return;
+      var url = box.dataset.url, psid = box.dataset.psid, count = -1;
+
+      function esc(s) { var d = document.createElement("div"); d.textContent = (s == null ? "" : s); return d.innerHTML; }
+
+      function render(msgs) {
+        box.innerHTML = msgs.map(function (m) {
+          var side = m.outgoing ? "flex-end" : "flex-start";
+          var bg = m.outgoing ? "var(--primary-color)" : "#334155";
+          return '<div style="max-width:70%;align-self:' + side + ';">' +
+                   '<div style="padding:0.6rem 0.9rem;border-radius:14px;font-size:0.95rem;background:' + bg + ';color:white;">' + esc(m.text) + '</div>' +
+                   '<div class="muted" style="font-size:0.7rem;margin-top:0.2rem;text-align:' + (m.outgoing ? "right" : "left") + ';">' + esc(m.name) + ' · ' + esc(m.time) + '</div>' +
+                 '</div>';
+        }).join("");
+        box.scrollTop = box.scrollHeight;
+      }
+
+      function poll() {
+        fetch(url + "?psid=" + encodeURIComponent(psid), { headers: { "Accept": "application/json" } })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            var m = d.messages || [];
+            if (m.length !== count) { count = m.length; render(m); }
+          })
+          .catch(function () {});
+      }
+
+      box.scrollTop = box.scrollHeight;
+      poll();
+      setInterval(poll, 4000);
+    })();
+  </script>
 <% end %>
