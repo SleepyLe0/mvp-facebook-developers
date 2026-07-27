@@ -2,24 +2,24 @@
 service: mvp_facebook_developers
 
 # Container image — use <your-dockerhub-username>/mvp_facebook_developers
-image: YOUR_DOCKERHUB_USER/mvp_facebook_developers
+image: sleepyle0/mvp_facebook_developers
 
 # Deploy to these servers (your VM's public IP).
 servers:
   web:
-    - YOUR_VM_IP
+    - <%= ENV.fetch("DEPLOY_IP") %>
 
 # SSL via Let's Encrypt, terminated by kamal-proxy. Point your domain's DNS
 # A record at YOUR_VM_IP first. Requires config.assume_ssl + config.force_ssl
 # in production.rb (already enabled).
 proxy:
   ssl: true
-  host: your-domain.com
+  host: army.klangtech.com
 
 # Where your image is stored. Docker Hub shown; ghcr.io etc. also work.
 registry:
   server: docker.io
-  username: YOUR_DOCKERHUB_USER
+  username: sleepyle0
   password:
     - KAMAL_REGISTRY_PASSWORD
 
@@ -53,3 +53,11 @@ asset_path: /rails/public/assets
 # the build cross-compiles; add a `remote:` builder if it's slow.
 builder:
   arch: amd64
+
+# Connect to the VM as the scm user with its dedicated key.
+# scm must be able to run docker (in the docker group) and have passwordless
+# sudo for the one-time Docker install during `kamal setup`.
+ssh:
+  user: scm
+  keys:
+    - ~/.ssh/id_scm
