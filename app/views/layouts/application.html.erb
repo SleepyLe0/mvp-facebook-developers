@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>ReplyDesk</title>
+    <title><%= content_for?(:title) ? "#{yield(:title)} · ReplyDesk" : "ReplyDesk" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -166,5 +166,9 @@
 
       <%= yield %>
     </div>
+
+    <footer style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.8rem; border-top:1px solid var(--border-color); margin-top:2rem;">
+      ReplyDesk · <a href="/privacy" style="color:var(--text-muted);">Privacy Policy</a> · <a href="/data-deletion" style="color:var(--text-muted);">Data Deletion</a>
+    </footer>
   </body>
 </html>

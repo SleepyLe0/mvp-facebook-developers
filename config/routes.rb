@@ -60,6 +60,10 @@ Rails.application.routes.draw do
     post "fetch_ig_account", to: "accounts#fetch_ig_account"
   end
 
+  # Public legal pages (no login — reviewers must reach these)
+  get "privacy", to: "pages#privacy"
+  get "data-deletion", to: "pages#data_deletion"
+
   # Health check
   get "up" => "rails/health#show", as: :rails_health_check
 end
