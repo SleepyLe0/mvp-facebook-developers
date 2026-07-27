@@ -92,10 +92,14 @@ class ProcessWebhookJob < ApplicationJob
       ticket = SupportTicket.find_or_initialize_by(psid: sender_id)
       ticket.last_message = text
       ticket.status = "open"
+      ticket.last_customer_message_at = Time.current
       ticket.save!
 
-      reply_text = "⚠️ We couldn't automatically verify your order status. A human agent has been notified and will reply shortly (Ticket ##{ticket.id})."
-      client.send_message(sender_id, { text: reply_text }, tag: "HUMAN_AGENT", access_token: access_token)
+      # Automated acknowledgement only — NO HUMAN_AGENT tag. This is an instant
+      # bot reply inside the 24h window. The tag is reserved for the human agent
+      # replying from the operator desk (Meta policy: tag must be human-sent).
+      reply_text = "Thanks — a support agent will look into this and get back to you shortly (Ticket ##{ticket.id})."
+      client.send_message(sender_id, { text: reply_text }, access_token: access_token)
     end
   end
 

@@ -46,6 +46,7 @@
             </div>
           <% end %>
 
+          <% if ticket.human_agent_window_open? %>
           <%= form_with url: orders_reply_ticket_path(ticket), method: :post, local: true do |f| %>
             <div style="background:rgba(255,255,255,0.03); padding:1rem; border-radius:6px; border:1px dashed var(--border-color);">
               <h4 style="margin:0 0 0.8rem 0; color:var(--primary-color);">Reply as a human agent</h4>
@@ -79,6 +80,11 @@
                   Send reply →
                 </button>
               </div>
+            </div>
+          <% end %>
+          <% else %>
+            <div style="background:rgba(249,115,22,0.08); border:1px solid var(--border-color); border-radius:6px; padding:1rem; color:var(--text-muted); font-size:0.9rem;">
+              ⏳ The 7-day Human Agent window has expired. You can reply again once the customer sends a new message.
             </div>
           <% end %>
         </div>

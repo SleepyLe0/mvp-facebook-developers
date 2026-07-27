@@ -22,6 +22,11 @@ module Orders
         return redirect_to orders_tickets_path
       end
 
+      unless ticket.human_agent_window_open?
+        flash[:alert] = "⏳ The 7-day Human Agent window has expired. The customer must message again before you can reply."
+        return redirect_to orders_tickets_path
+      end
+
       client = MetaGraphClient.new
       # ponytail: MVP has one connected page; scope by ticket.page_id if this goes multi-page
       page = ConnectedPage.first
