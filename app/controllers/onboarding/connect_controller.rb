@@ -61,18 +61,15 @@ module Onboarding
       response = client.subscribe_page_app(page_id, page_access_token)
 
       if response["success"] || response["result"] == "success"
-        ig_account_id = params[:instagram_business_account_id]
-
         connected_page = ConnectedPage.find_or_initialize_by(page_id: page_id)
         connected_page.update!(
           user: current_user,
           name: page_name,
           access_token: page_access_token,
-          instagram_business_account_id: ig_account_id,
           subscribed: true
         )
 
-        flash[:notice] = "🎉 Successfully connected Page '#{page_name}' (ID: #{page_id}) to your account and subscribed webhooks!"
+        flash[:notice] = "🎉 Successfully connected Page '#{page_name}' and subscribed webhooks!"
       else
         flash[:alert] = "Subscription failed: #{response}"
       end

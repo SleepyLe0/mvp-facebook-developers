@@ -9,6 +9,9 @@
   <a href="<%= @oauth_url %>" class="btn" style="background:#1877f2;">
     Connect with Facebook
   </a>
+  <p class="muted" style="font-size:0.8rem; margin-top:0.75rem;">
+    By connecting a Page, you allow ReplyDesk to receive and send messages on its behalf, as described in our <a href="/privacy" style="color:var(--primary-color);">Privacy Policy</a>.
+  </p>
 
   <% if Rails.env.development? %>
     <details class="dev-note">
@@ -29,7 +32,6 @@
         <tr>
           <th>Page</th>
           <th>Status</th>
-          <th>Instagram</th>
         </tr>
       </thead>
       <tbody>
@@ -43,13 +45,6 @@
               <span class="badge <%= page.subscribed ? 'badge-green' : 'badge-orange' %>">
                 <%= page.subscribed ? 'Active' : 'Not connected' %>
               </span>
-            </td>
-            <td>
-              <% if page.instagram_business_account_id.present? %>
-                <span class="badge badge-green">Linked</span>
-              <% else %>
-                <span class="muted">Not linked</span>
-              <% end %>
             </td>
           </tr>
         <% end %>

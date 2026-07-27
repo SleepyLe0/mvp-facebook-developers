@@ -52,14 +52,6 @@ Rails.application.routes.draw do
     post "subscribe", to: "connect#subscribe"
   end
 
-  # Flow 5: Instagram DM Auto-Reply for Creator/Brand Inquiries
-  namespace :instagram do
-    get "webhook", to: "webhooks#verify"
-    post "webhook", to: "webhooks#create"
-    get "accounts", to: "accounts#index"
-    post "fetch_ig_account", to: "accounts#fetch_ig_account"
-  end
-
   # Public legal pages (no login — reviewers must reach these)
   get "privacy", to: "pages#privacy"
   get "data-deletion", to: "pages#data_deletion"

@@ -4,20 +4,18 @@ require "json"
 class MetaGraphClient
   BASE_URL = "https://graph.facebook.com".freeze
 
-  attr_reader :version, :app_id, :app_secret, :default_page_token, :default_ig_token
+  attr_reader :version, :app_id, :app_secret, :default_page_token
 
   def initialize(
     version: ENV.fetch("GRAPH_API_VERSION", "v20.0"),
     app_id: ENV["FB_APP_ID"],
     app_secret: ENV["FB_APP_SECRET"],
-    default_page_token: ENV["FB_PAGE_ACCESS_TOKEN"],
-    default_ig_token: ENV["IG_ACCESS_TOKEN"]
+    default_page_token: ENV["FB_PAGE_ACCESS_TOKEN"]
   )
     @version = version
     @app_id = app_id
     @app_secret = app_secret
     @default_page_token = default_page_token
-    @default_ig_token = default_ig_token
     @conn = Faraday.new(url: BASE_URL) do |f|
       f.request :json
       f.response :json
@@ -146,7 +144,7 @@ class MetaGraphClient
 
     response = @conn.get(endpoint) do |req|
       req.params["access_token"] = user_access_token
-      req.params["fields"] = "id,name,access_token,category,tasks,instagram_business_account"
+      req.params["fields"] = "id,name,access_token,category,tasks"
     end
 
     log_response("get_user_pages", response)
@@ -163,39 +161,6 @@ class MetaGraphClient
     end
 
     log_response("subscribe_page_app", response)
-    response.body
-  end
-
-  # Flow 5: Fetch linked Instagram Business Account from Page
-  def get_instagram_account(page_id, page_access_token)
-    endpoint = "/#{version}/#{page_id}"
-
-    response = @conn.get(endpoint) do |req|
-      req.params["fields"] = "instagram_business_account,name"
-      req.params["access_token"] = page_access_token
-    end
-
-    log_response("get_instagram_account", response)
-    response.body
-  end
-
-  # Flow 5: Send Instagram Direct Message
-  def send_instagram_message(recipient_id, message_payload, access_token: nil)
-    token = access_token.presence || default_ig_token.presence || default_page_token
-    endpoint = "/#{version}/me/messages"
-
-    body = {
-      recipient: { id: recipient_id },
-      message: message_payload
-    }
-
-    response = @conn.post(endpoint) do |req|
-      req.params["access_token"] = token
-      req.headers["Content-Type"] = "application/json"
-      req.body = body
-    end
-
-    log_response("send_instagram_message", response)
     response.body
   end
 

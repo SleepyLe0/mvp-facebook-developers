@@ -3,8 +3,6 @@ class AutomationsController < ApplicationController
 
   def index
     @faqs = FaqEntry.order(created_at: :desc)
-    @all_pages = current_user.connected_pages
-    @ig_pages = @all_pages.where.not(instagram_business_account_id: [nil, ""])
   end
 
   def create_rule

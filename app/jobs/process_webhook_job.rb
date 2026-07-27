@@ -50,8 +50,6 @@ class ProcessWebhookJob < ApplicationJob
           process_profiles(client, sender_id, message_text, page_access_token)
         when "onboarding"
           process_onboarding(client, sender_id, message_text, page_access_token)
-        when "instagram"
-          process_instagram(client, sender_id, message_text, page_access_token)
         else
           Rails.logger.info "[ProcessWebhookJob] Unknown flow type: #{flow_type}"
         end
@@ -136,24 +134,5 @@ class ProcessWebhookJob < ApplicationJob
   def process_onboarding(client, sender_id, text, access_token)
     reply_text = "Welcome to our Connected Page service! Your page is active and programmatically subscribed to webhooks."
     client.send_message(sender_id, { text: reply_text }, access_token: access_token)
-  end
-
-  # Flow 5: Instagram DM Auto-Reply
-  def process_instagram(client, sender_id, text, access_token)
-    if text.downcase.include?("brand")
-      reply_text = "Thanks for reaching out! For brand partnerships, please check our media kit or email partnerships@example.com."
-    elsif text.downcase.include?("creator")
-      reply_text = "Hey Creator! We love collaborating. Submit your portfolio at example.com/creators."
-    else
-      reply_text = "Welcome to our Instagram Creator & Brand Portal! Please select your inquiry type:"
-    end
-
-    quick_replies = [
-      { content_type: "text", title: "I'm a Brand", payload: "brand" },
-      { content_type: "text", title: "I'm a Creator", payload: "creator" }
-    ]
-
-    message_payload = { text: reply_text, quick_replies: quick_replies }
-    client.send_instagram_message(sender_id, message_payload, access_token: access_token)
   end
 end
