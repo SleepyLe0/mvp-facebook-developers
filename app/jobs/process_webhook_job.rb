@@ -1,6 +1,8 @@
 class ProcessWebhookJob < ApplicationJob
   queue_as :default
 
+  MENU_PAYLOADS = %w[GET_STARTED CHECK_ORDER TALK_TO_HUMAN].freeze
+
   def perform(flow_type, payload)
     log = WebhookLog.create!(
       event_type: flow_type,
@@ -21,6 +23,14 @@ class ProcessWebhookJob < ApplicationJob
         sender_id = event.dig("sender", "id")
         recipient_id = event.dig("recipient", "id")
         message_data = event["message"]
+
+        # Get Started button and Persistent Menu taps arrive as postbacks (no message).
+        if (postback = event["postback"])
+          next if sender_id.blank?
+          handle_menu_action(client, sender_id, postback["payload"], page_access_token)
+          next
+        end
+
         next if message_data.nil?
 
         # Boss Requirement #4: Support Message Echoes (messages sent by Page Admin or other apps)
@@ -43,7 +53,11 @@ class ProcessWebhookJob < ApplicationJob
 
         case flow_type.to_s
         when "unified"
-          process_unified(client, sender_id, message_text, page_access_token)
+          if MENU_PAYLOADS.include?(message_text)
+            handle_menu_action(client, sender_id, message_text, page_access_token)
+          else
+            process_unified(client, sender_id, message_text, page_access_token)
+          end
         when "faq"
           process_faq(client, sender_id, message_text, page_access_token)
         when "orders"
@@ -91,8 +105,33 @@ class ProcessWebhookJob < ApplicationJob
       return
     end
 
-    # 3. No match → escalate to a human. Plain acknowledgement, NO HUMAN_AGENT tag;
-    # the tag is sent later by a human agent from the operator desk.
+    # 3. No match → escalate to a human (plain ack, NO HUMAN_AGENT tag).
+    escalate_to_human(client, sender_id, text, access_token)
+  end
+
+  # Welcome screen: Get Started button and Persistent Menu taps land here.
+  def handle_menu_action(client, sender_id, payload, access_token)
+    case payload
+    when "CHECK_ORDER"
+      client.send_message(sender_id, { text: "Sure! Please send your order number (for example, 1001)." }, access_token: access_token)
+    when "TALK_TO_HUMAN"
+      escalate_to_human(client, sender_id, "Requested a human agent", access_token)
+    else # GET_STARTED or anything unknown
+      send_welcome(client, sender_id, access_token)
+    end
+  end
+
+  def send_welcome(client, sender_id, access_token)
+    quick_replies = [
+      { content_type: "text", title: "Check an order", payload: "CHECK_ORDER" },
+      { content_type: "text", title: "Talk to a human", payload: "TALK_TO_HUMAN" }
+    ]
+    text = "👋 Welcome! I can answer common questions and check your order status. Ask me anything, or pick an option below."
+    client.send_message(sender_id, { text: text, quick_replies: quick_replies }, access_token: access_token)
+  end
+
+  # Create/refresh a human ticket and send a plain acknowledgement (never tagged).
+  def escalate_to_human(client, sender_id, text, access_token)
     ticket = SupportTicket.find_or_initialize_by(psid: sender_id)
     ticket.last_message = text
     ticket.status = "open"

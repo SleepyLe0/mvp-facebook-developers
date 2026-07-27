@@ -157,10 +157,38 @@ class MetaGraphClient
 
     response = @conn.post(endpoint) do |req|
       req.params["access_token"] = page_access_token
-      req.params["subscribed_fields"] = "messages,messaging_postbacks,messaging_optins,message_echoes"
+      req.params["subscribed_fields"] = "messages,messaging_postbacks,messaging_optins,message_echoes,messaging_policy_enforcement"
     end
 
     log_response("subscribe_page_app", response)
+    response.body
+  end
+
+  # Set the Messenger welcome screen: Get Started button, greeting text, persistent menu.
+  def set_messenger_profile(page_access_token, greeting_text)
+    endpoint = "/#{version}/me/messenger_profile"
+
+    body = {
+      get_started: { payload: "GET_STARTED" },
+      greeting: [{ locale: "default", text: greeting_text }],
+      persistent_menu: [{
+        locale: "default",
+        composer_input_disabled: false,
+        call_to_actions: [
+          { type: "postback", title: "Check an order", payload: "CHECK_ORDER" },
+          { type: "postback", title: "Talk to a human", payload: "TALK_TO_HUMAN" },
+          { type: "postback", title: "Get started", payload: "GET_STARTED" }
+        ]
+      }]
+    }
+
+    response = @conn.post(endpoint) do |req|
+      req.params["access_token"] = page_access_token
+      req.headers["Content-Type"] = "application/json"
+      req.body = body
+    end
+
+    log_response("set_messenger_profile", response)
     response.body
   end
 

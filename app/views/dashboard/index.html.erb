@@ -25,10 +25,17 @@
     <div class="stat"><div class="n"><%= @profile_count %></div><div class="l">Customers seen</div></div>
   </div>
 
-  <div class="card">
-    <h3 style="margin-top:0;">📥 Inbox</h3>
-    <p class="muted" style="font-size:0.9rem;">See customer conversations and reply to anyone escalated to a human agent.</p>
-    <a href="/profiles/inbox" class="btn" style="font-size:0.85rem;">Open Inbox →</a>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+    <div class="card">
+      <h3 style="margin-top:0;">📥 Inbox</h3>
+      <p class="muted" style="font-size:0.9rem;">See customer conversations and reply to anyone escalated to a human agent.</p>
+      <a href="/profiles/inbox" class="btn" style="font-size:0.85rem;">Open Inbox →</a>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;">🤖 Automations</h3>
+      <p class="muted" style="font-size:0.9rem;">Manage the auto-reply rules that answer common questions instantly.</p>
+      <a href="/automations" class="btn btn-secondary" style="font-size:0.85rem;">View automations →</a>
+    </div>
   </div>
 <% end %>
 

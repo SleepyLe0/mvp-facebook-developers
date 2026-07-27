@@ -69,7 +69,11 @@ module Onboarding
           subscribed: true
         )
 
-        flash[:notice] = "🎉 Successfully connected Page '#{page_name}' and subscribed webhooks!"
+        # Set up the Messenger welcome screen (Get Started, greeting, persistent menu).
+        greeting = "Hi {{user_first_name}}! Welcome to #{page_name}. Ask me a question, check an order, or talk to a human agent."
+        client.set_messenger_profile(page_access_token, greeting)
+
+        flash[:notice] = "🎉 Successfully connected Page '#{page_name}', subscribed webhooks, and set up the welcome screen!"
       else
         flash[:alert] = "Subscription failed: #{response}"
       end
