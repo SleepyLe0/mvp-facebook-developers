@@ -25,19 +25,35 @@
               <% end %>
             </div>
             <div style="display:flex; gap:0.5rem; align-items:center;">
-              <span class="badge badge-orange">Outside 24h window</span>
+              <% if ticket.handled_by_human %>
+                <span class="badge badge-green">🙋 You’re handling · bot paused</span>
+              <% end %>
               <span class="badge <%= ticket.status == 'open' ? 'badge-orange' : 'badge-green' %>">
                 <%= ticket.status.to_s.titleize %>
               </span>
+              <%= button_to (ticket.handled_by_human ? "Resume bot" : "Take over"), orders_toggle_bot_ticket_path(ticket), method: :post, class: "btn btn-secondary", style: "font-size:0.8rem; padding:0.3rem 0.7rem;" %>
             </div>
           </div>
 
-          <div style="background:#0f172a; padding:1rem; border-radius:6px; margin-bottom:1rem; border-left:3px solid #f97316;">
-            <div class="muted" style="font-size:0.8rem; font-weight:bold; margin-bottom:0.2rem;">LATEST MESSAGE</div>
-            <div style="font-size:1rem; color:white;">"<%= ticket.last_message %>"</div>
-            <div class="muted" style="font-size:0.75rem; margin-top:0.4rem;">
-              Received <%= ticket.created_at.strftime("%b %-d, %H:%M") %>
-            </div>
+          <% thread = @threads[ticket.psid] %>
+          <div style="background:#0f172a; padding:1rem; border-radius:8px; margin-bottom:1rem; max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:0.5rem;">
+            <% if thread.present? %>
+              <% thread.each do |m| %>
+                <% outgoing = m.dig("from", "id").to_s == @page&.page_id.to_s %>
+                <div style="max-width:75%; align-self:<%= outgoing ? 'flex-end' : 'flex-start' %>;">
+                  <div style="padding:0.5rem 0.8rem; border-radius:12px; font-size:0.9rem; background:<%= outgoing ? 'var(--primary-color)' : '#334155' %>; color:white;">
+                    <%= m["message"].presence || "(no text)" %>
+                  </div>
+                  <div class="muted" style="font-size:0.68rem; margin-top:0.15rem; text-align:<%= outgoing ? 'right' : 'left' %>;">
+                    <%= m.dig("from", "name") || (outgoing ? "You" : "Customer") %> · <%= m["created_time"] %>
+                  </div>
+                </div>
+              <% end %>
+            <% else %>
+              <div class="muted" style="font-size:0.8rem; font-weight:bold;">LATEST MESSAGE</div>
+              <div style="font-size:1rem; color:white;">"<%= ticket.last_message %>"</div>
+              <div class="muted" style="font-size:0.75rem;">Received <%= ticket.created_at.strftime("%b %-d, %H:%M") %></div>
+            <% end %>
           </div>
 
           <% if ticket.human_agent_notes.present? %>

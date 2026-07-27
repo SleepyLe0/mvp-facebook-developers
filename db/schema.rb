@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_27_103001) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_27_103002) do
   create_table "connected_pages", force: :cascade do |t|
     t.text "access_token"
     t.datetime "created_at", null: false
@@ -45,6 +45,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_27_103001) do
   create_table "support_tickets", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "customer_name"
+    t.boolean "handled_by_human"
     t.text "human_agent_notes"
     t.datetime "last_customer_message_at"
     t.text "last_message"

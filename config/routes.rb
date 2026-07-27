@@ -31,6 +31,7 @@ Rails.application.routes.draw do
     post "webhook", to: "webhooks#create"
     get "tickets", to: "tickets#index"
     post "tickets/:id/reply", to: "tickets#reply", as: :reply_ticket
+    post "tickets/:id/toggle_bot", to: "tickets#toggle_bot", as: :toggle_bot_ticket
   end
 
   # Flow 3: Page Profile Lookup for Support Agents

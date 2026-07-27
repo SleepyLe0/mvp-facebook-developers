@@ -83,6 +83,14 @@ class ProcessWebhookJob < ApplicationJob
 
   # Flow 2: Order Inquiry & Human Handoff
   def process_orders(client, sender_id, text, access_token)
+    # Bot takeover: if a human agent is handling this conversation, record the
+    # message but stay silent — the bot must not butt in mid-handoff (UChat-style).
+    existing = SupportTicket.find_by(psid: sender_id)
+    if existing&.handled_by_human
+      existing.update!(last_message: text, last_customer_message_at: Time.current, status: "open")
+      return
+    end
+
     order = Order.find_by_query(text)
 
     if order
