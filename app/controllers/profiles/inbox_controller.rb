@@ -4,60 +4,25 @@ module Profiles
     before_action :set_page
 
     def index
-      @conversations = []
-      return if @page.nil?
-
-      client = MetaGraphClient.new
-      raw = client.get_page_conversations(@page.page_id, access_token: @page.access_token)
-
-      (raw["data"] || []).each do |thread|
-        parts = thread.dig("participants", "data") || []
-        customer = parts.find { |p| p["id"].to_s != @page.page_id.to_s } || parts.first
-        next unless customer
-
-        msgs = thread.dig("messages", "data") || []
-        @conversations << {
-          psid: customer["id"],
-          name: customer["name"] || "Customer",
-          snippet: msgs.first&.dig("message"),
-          updated_time: thread["updated_time"],
-          messages: msgs
-        }
-      end
-
-      # Auto-open the requested (or most recent) conversation
+      @conversations = fetch_conversations
       @active_psid = params[:psid].presence || @conversations.first&.dig(:psid)
       active = @conversations.find { |c| c[:psid] == @active_psid }
       @active_name = active&.dig(:name) || "Customer"
       # Graph returns newest-first; show oldest-first like a normal chat
-      @thread = if active
-        (active[:messages] || []).reverse
-      elsif @active_psid
-        client.get_conversation_messages(@page.page_id, @active_psid, access_token: @page.access_token).reverse
-      else
-        []
-      end
+      @thread = (active&.dig(:messages) || []).reverse
     end
 
-    # Polled by the chat view for near-real-time updates.
-    # ponytail: 4s polling of Graph. Swap for Action Cable + webhook broadcast if you need instant push.
-    def messages
-      thread = []
-      if @page && params[:psid].present?
-        client = MetaGraphClient.new
-        thread = client.get_conversation_messages(@page.page_id, params[:psid], access_token: @page.access_token).reverse
-      end
+    # Polled by the chat view for near-real-time updates — one Graph call powers
+    # both the conversation list and the open thread.
+    # ponytail: 4s polling. Swap for Action Cable + webhook broadcast for instant push.
+    def poll
+      convos = fetch_conversations
+      psid = params[:psid].presence
+      active = convos.find { |c| c[:psid] == psid }
 
       render json: {
-        messages: thread.map { |m|
-          {
-            id: m["id"],
-            text: m["message"],
-            outgoing: m.dig("from", "id").to_s == @page&.page_id.to_s,
-            name: m.dig("from", "name"),
-            time: m["created_time"]
-          }
-        }
+        conversations: convos.map { |c| { psid: c[:psid], name: c[:name], snippet: c[:snippet] } },
+        messages: (active&.dig(:messages) || []).reverse.map { |m| message_json(m) }
       }
     end
 
@@ -85,6 +50,38 @@ module Profiles
     # ponytail: MVP has one connected page; pick per-conversation page if this goes multi-page
     def set_page
       @page = current_user.connected_pages.first
+    end
+
+    def fetch_conversations
+      return [] if @page.nil?
+
+      client = MetaGraphClient.new
+      raw = client.get_page_conversations(@page.page_id, access_token: @page.access_token)
+
+      (raw["data"] || []).filter_map do |thread|
+        parts = thread.dig("participants", "data") || []
+        customer = parts.find { |p| p["id"].to_s != @page.page_id.to_s } || parts.first
+        next unless customer
+
+        msgs = thread.dig("messages", "data") || []
+        {
+          psid: customer["id"],
+          name: customer["name"] || "Customer",
+          snippet: msgs.first&.dig("message"),
+          updated_time: thread["updated_time"],
+          messages: msgs
+        }
+      end
+    end
+
+    def message_json(m)
+      {
+        id: m["id"],
+        text: m["message"],
+        outgoing: m.dig("from", "id").to_s == @page&.page_id.to_s,
+        name: m.dig("from", "name"),
+        time: m["created_time"]
+      }
     end
   end
 end

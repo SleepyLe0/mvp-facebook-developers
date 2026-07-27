@@ -19,7 +19,10 @@
   <div style="display:grid; grid-template-columns: 300px 1fr; gap:1rem; align-items:start;">
 
     <!-- Customer list -->
-    <div class="card" style="padding:0.5rem; max-height:70vh; overflow-y:auto;">
+    <div class="card" id="chat-list"
+         data-url="<%= profiles_inbox_poll_path %>"
+         data-psid="<%= @active_psid %>"
+         style="padding:0.5rem; max-height:70vh; overflow-y:auto;">
       <% if @conversations.any? %>
         <% @conversations.each do |c| %>
           <% active = (@active_psid == c[:psid]) %>
@@ -47,8 +50,6 @@
 
         <!-- Messages -->
         <div id="chat-messages"
-             data-url="<%= profiles_inbox_messages_path %>"
-             data-psid="<%= @active_psid %>"
              style="flex:1; overflow-y:auto; padding:1.25rem; display:flex; flex-direction:column; gap:0.6rem;">
           <% if @thread.blank? %>
             <div class="empty" style="margin:auto;"><div class="icon">👋</div><p>No messages loaded yet. Say hello below.</p></div>
@@ -70,11 +71,11 @@
         </div>
 
         <!-- Reply box -->
-        <%= form_with url: profiles_inbox_reply_path, method: :post, local: true, style: "border-top:1px solid var(--border-color); padding:0.75rem; display:flex; gap:0.5rem;" do %>
+        <%= form_with url: profiles_inbox_reply_path, method: :post, local: true, style: "border-top:1px solid var(--border-color); padding:0.75rem; display:flex; gap:0.5rem; align-items:center;" do %>
           <input type="hidden" name="psid" value="<%= @active_psid %>">
           <input type="text" name="body" placeholder="Type a message…" autocomplete="off" autofocus
-                 style="flex:1; padding:0.7rem 0.9rem; border-radius:8px; border:1px solid var(--border-color); background:#0f172a; color:white;">
-          <button type="submit" class="btn">Send</button>
+                 style="flex:1 1 auto; width:100%; min-width:0; padding:0.85rem 1rem; font-size:1rem; border-radius:8px; border:1px solid var(--border-color); background:#0f172a; color:white; box-sizing:border-box;">
+          <button type="submit" class="btn" style="flex:0 0 auto;">Send</button>
         <% end %>
       <% else %>
         <div class="empty" style="margin:auto;">
@@ -91,13 +92,27 @@
 
   <script>
     (function () {
+      var list = document.getElementById("chat-list");
+      if (!list) return;
       var box = document.getElementById("chat-messages");
-      if (!box || !box.dataset.psid) return;
-      var url = box.dataset.url, psid = box.dataset.psid, count = -1;
+      var url = list.dataset.url, psid = list.dataset.psid || "", listSig = "", msgCount = -1;
 
       function esc(s) { var d = document.createElement("div"); d.textContent = (s == null ? "" : s); return d.innerHTML; }
 
-      function render(msgs) {
+      function renderList(convs) {
+        list.innerHTML = convs.map(function (c) {
+          var bg = (c.psid === psid) ? "background:rgba(59,130,246,0.15);" : "";
+          return '<a href="/profiles/inbox?psid=' + encodeURIComponent(c.psid) + '" style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.75rem;border-radius:8px;text-decoration:none;color:var(--text-main);' + bg + '">' +
+                   '<div style="width:40px;height:40px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;">' + esc((c.name || "U").charAt(0)) + '</div>' +
+                   '<div style="min-width:0;">' +
+                     '<div style="font-weight:600;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + esc(c.name) + '</div>' +
+                     '<div class="muted" style="font-size:0.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + esc(c.snippet || "…") + '</div>' +
+                   '</div>' +
+                 '</a>';
+        }).join("");
+      }
+
+      function renderMessages(msgs) {
         box.innerHTML = msgs.map(function (m) {
           var side = m.outgoing ? "flex-end" : "flex-start";
           var bg = m.outgoing ? "var(--primary-color)" : "#334155";
@@ -110,16 +125,20 @@
       }
 
       function poll() {
-        fetch(url + "?psid=" + encodeURIComponent(psid), { headers: { "Accept": "application/json" } })
+        fetch(url + (psid ? "?psid=" + encodeURIComponent(psid) : ""), { headers: { "Accept": "application/json" } })
           .then(function (r) { return r.json(); })
           .then(function (d) {
-            var m = d.messages || [];
-            if (m.length !== count) { count = m.length; render(m); }
+            var convs = d.conversations || [], sig = JSON.stringify(convs);
+            if (sig !== listSig) { listSig = sig; renderList(convs); }
+            if (box) {
+              var m = d.messages || [];
+              if (m.length !== msgCount) { msgCount = m.length; renderMessages(m); }
+            }
           })
           .catch(function () {});
       }
 
-      box.scrollTop = box.scrollHeight;
+      if (box) box.scrollTop = box.scrollHeight;
       poll();
       setInterval(poll, 4000);
     })();
