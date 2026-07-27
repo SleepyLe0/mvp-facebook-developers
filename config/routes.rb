@@ -14,8 +14,10 @@ Rails.application.routes.draw do
     end
   end
 
-  # Automations overview (read-only view of auto-reply rules)
+  # Automations: view and manage auto-reply rules
   get "automations", to: "automations#index"
+  post "automations/rules", to: "automations#create_rule", as: :automation_rules
+  delete "automations/rules/:id", to: "automations#destroy_rule", as: :automation_rule
 
   # Flow 1: Page Auto-Responder / FAQ Bot
   namespace :faq do

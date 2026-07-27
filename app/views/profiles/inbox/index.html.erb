@@ -74,7 +74,7 @@
         <%= form_with url: profiles_inbox_reply_path, method: :post, local: true, style: "border-top:1px solid var(--border-color); padding:0.75rem; display:flex; gap:0.5rem; align-items:center;" do %>
           <input type="hidden" name="psid" value="<%= @active_psid %>">
           <input type="text" name="body" placeholder="Type a message…" autocomplete="off" autofocus
-                 style="flex:1 1 auto; width:100%; min-width:0; padding:0.85rem 1rem; font-size:1rem; border-radius:8px; border:1px solid var(--border-color); background:#0f172a; color:white; box-sizing:border-box;">
+                 style="flex:1 1 auto; min-width:0; padding:0.85rem 1rem; font-size:1rem; border-radius:8px; border:1px solid var(--border-color); background:#0f172a; color:white; box-sizing:border-box;">
           <button type="submit" class="btn" style="flex:0 0 auto;">Send</button>
         <% end %>
       <% else %>

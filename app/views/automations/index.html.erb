@@ -9,25 +9,51 @@
     <span class="badge badge-blue"><%= @faqs.size %> rules</span>
   </div>
   <p class="muted" style="font-size:0.9rem;">When a customer’s message matches one of these, ReplyDesk replies instantly.</p>
+
+  <!-- Add a rule -->
+  <%= form_with url: automation_rules_path, method: :post, local: true do %>
+    <div style="display:grid; grid-template-columns: 1fr 1fr 2fr auto; gap:0.5rem; align-items:end; margin:0.5rem 0 1rem;">
+      <div>
+        <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:0.25rem;">Topic</label>
+        <input type="text" name="question" placeholder="Store hours" required
+               style="width:100%; padding:0.55rem 0.7rem; border-radius:6px; border:1px solid var(--border-color); background:#0f172a; color:white; box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:0.25rem;">Trigger words</label>
+        <input type="text" name="keywords" placeholder="hours, open, close"
+               style="width:100%; padding:0.55rem 0.7rem; border-radius:6px; border:1px solid var(--border-color); background:#0f172a; color:white; box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:0.25rem;">Auto-reply</label>
+        <input type="text" name="answer" placeholder="We’re open 9am–6pm, Mon–Fri." required
+               style="width:100%; padding:0.55rem 0.7rem; border-radius:6px; border:1px solid var(--border-color); background:#0f172a; color:white; box-sizing:border-box;">
+      </div>
+      <button type="submit" class="btn">Add rule</button>
+    </div>
+  <% end %>
+
   <% if @faqs.any? %>
     <table>
-      <thead><tr><th>When a customer asks about…</th><th>ReplyDesk answers</th></tr></thead>
+      <thead><tr><th>When a customer asks about…</th><th>ReplyDesk answers</th><th></th></tr></thead>
       <tbody>
         <% @faqs.each do |faq| %>
           <tr>
-            <td style="width:35%;">
+            <td style="width:30%;">
               <strong><%= faq.question %></strong>
-              <% if faq.respond_to?(:keywords) && faq.keywords.present? %>
+              <% if faq.keywords.present? %>
                 <div class="muted" style="font-size:0.75rem;">Triggers: <%= faq.keywords %></div>
               <% end %>
             </td>
             <td class="muted"><%= faq.answer %></td>
+            <td style="text-align:right; width:1%;">
+              <%= button_to "Delete", automation_rule_path(faq), method: :delete, class: "btn btn-secondary", style: "font-size:0.8rem; padding:0.35rem 0.7rem;", form: { data: { turbo_confirm: "Delete this rule?" } } %>
+            </td>
           </tr>
         <% end %>
       </tbody>
     </table>
   <% else %>
-    <div class="empty"><div class="icon">🤖</div><p>No auto-reply rules yet.</p></div>
+    <div class="empty"><div class="icon">🤖</div><p>No auto-reply rules yet — add your first one above.</p></div>
   <% end %>
 </div>
 
