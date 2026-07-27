@@ -164,13 +164,22 @@ class MetaGraphClient
     response.body
   end
 
-  # Set the Messenger welcome screen: Get Started button, greeting text, persistent menu.
-  def set_messenger_profile(page_access_token, greeting_text)
+  # Set the Messenger welcome screen: Get Started button, ice breakers (welcome
+  # prompts), and persistent menu. Note: v18+ dropped `greeting`; ice_breakers
+  # is its modern replacement.
+  def set_messenger_profile(page_access_token)
     endpoint = "/#{version}/me/messenger_profile"
 
     body = {
       get_started: { payload: "GET_STARTED" },
-      greeting: [{ locale: "default", text: greeting_text }],
+      ice_breakers: [{
+        locale: "default",
+        call_to_actions: [
+          { question: "What can you do?", payload: "GET_STARTED" },
+          { question: "Check an order", payload: "CHECK_ORDER" },
+          { question: "Talk to a human", payload: "TALK_TO_HUMAN" }
+        ]
+      }],
       persistent_menu: [{
         locale: "default",
         composer_input_disabled: false,
