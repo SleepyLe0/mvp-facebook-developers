@@ -1,6 +1,6 @@
 <div class="page-head">
   <h2>Automations</h2>
-  <p class="muted">The questions ReplyDesk answers automatically, so your team only handles what really needs a person.</p>
+  <p class="muted">The questions Army KlangTECH answers automatically, so your team only handles what really needs a person.</p>
 </div>
 
 <div class="card" style="margin-bottom: 1.5rem;">
@@ -8,7 +8,7 @@
     <h3 style="margin:0;">💬 Messenger auto-replies</h3>
     <span class="badge badge-blue"><%= @faqs.size %> rules</span>
   </div>
-  <p class="muted" style="font-size:0.9rem;">When a customer’s message matches one of these, ReplyDesk replies instantly.</p>
+  <p class="muted" style="font-size:0.9rem;">When a customer’s message matches one of these, Army KlangTECH replies instantly.</p>
 
   <!-- Add a rule -->
   <%= form_with url: automation_rules_path, method: :post, local: true do %>
@@ -34,7 +34,7 @@
 
   <% if @faqs.any? %>
     <table>
-      <thead><tr><th>When a customer asks about…</th><th>ReplyDesk answers</th><th></th></tr></thead>
+      <thead><tr><th>When a customer asks about…</th><th>Army KlangTECH answers</th><th></th></tr></thead>
       <tbody>
         <% @faqs.each do |faq| %>
           <tr>

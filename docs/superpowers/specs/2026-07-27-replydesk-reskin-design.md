@@ -1,14 +1,14 @@
-# ReplyDesk — Product Reskin (for Meta App Review + demo)
+# Army KlangTECH — Product Reskin (for Meta App Review + demo)
 
 **Date:** 2026-07-27
 **Scope:** UI/UX reskin only. No routes/controllers/models/jobs/`MetaGraphClient` behavior changes, except one new **read-only** Automations page (route + thin controller + view).
-**Goal:** Make the app read as a real product ("ReplyDesk"), not a Facebook API debug console, so a Meta reviewer / boss understands what it does and what to do next.
+**Goal:** Make the app read as a real product ("Army KlangTECH"), not a Facebook API debug console, so a Meta reviewer / boss understands what it does and what to do next.
 
 ## Problem
 Every screen leads with "Flow N", exposes webhook endpoints, raw JSON, PSIDs, permission-name badges, and "Screencast Testing" token inputs. Users can't tell what the product is or what to do.
 
 ## Product framing
-ReplyDesk — "Connect your Facebook & Instagram pages, auto-answer common questions, and hand off tricky ones to a human."
+Army KlangTECH — "Connect your Facebook & Instagram pages, auto-answer common questions, and hand off tricky ones to a human."
 
 ## Navigation (maps onto existing pages)
 | Nav | Purpose | Backed by |
