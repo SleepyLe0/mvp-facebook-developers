@@ -1,3 +1,11 @@
+# Never auto-seed demo data in production — `db:prepare` runs this on a fresh
+# database (e.g. first Kamal deploy), which would wipe real data and create
+# fake pages/users. For prod test data, run db/seeds/orders.rb explicitly.
+if Rails.env.production?
+  puts "Skipping demo seed in production."
+  return
+end
+
 # Clear existing seed data
 User.destroy_all
 FaqEntry.destroy_all
