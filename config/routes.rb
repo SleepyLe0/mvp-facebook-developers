@@ -19,6 +19,11 @@ Rails.application.routes.draw do
   post "automations/rules", to: "automations#create_rule", as: :automation_rules
   delete "automations/rules/:id", to: "automations#destroy_rule", as: :automation_rule
 
+  # Unified Messenger webhook — point the Facebook callback URL here.
+  # Runs FAQ → order lookup → human fallback in one endpoint.
+  get "webhook", to: "webhooks#verify"
+  post "webhook", to: "webhooks#create"
+
   # Flow 1: Page Auto-Responder / FAQ Bot
   namespace :faq do
     get "webhook", to: "webhooks#verify"

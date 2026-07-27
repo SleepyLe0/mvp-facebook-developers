@@ -42,6 +42,8 @@ class ProcessWebhookJob < ApplicationJob
         next if message_text.blank?
 
         case flow_type.to_s
+        when "unified"
+          process_unified(client, sender_id, message_text, page_access_token)
         when "faq"
           process_faq(client, sender_id, message_text, page_access_token)
         when "orders"
@@ -63,6 +65,42 @@ class ProcessWebhookJob < ApplicationJob
   end
 
   private
+
+  # Unified support flow: FAQ auto-reply → order lookup → human fallback.
+  # This is the single endpoint used in production (/webhook).
+  def process_unified(client, sender_id, text, access_token)
+    # Bot takeover: a human is handling this conversation → record + stay silent.
+    existing = SupportTicket.find_by(psid: sender_id)
+    if existing&.handled_by_human
+      existing.update!(last_message: text, last_customer_message_at: Time.current, status: "open")
+      return
+    end
+
+    # 1. FAQ rule match → instant auto-reply (no tag).
+    faq = FaqEntry.search_answer(text)
+    if faq
+      client.send_message(sender_id, { text: faq.answer }, access_token: access_token)
+      return
+    end
+
+    # 2. Order number match → order status (no tag).
+    order = Order.find_by_query(text)
+    if order
+      reply_text = "📦 Order #{order.order_number} Status: #{order.status.upcase}. Customer: #{order.customer_name}. Items: #{order.item_details}."
+      client.send_message(sender_id, { text: reply_text }, access_token: access_token)
+      return
+    end
+
+    # 3. No match → escalate to a human. Plain acknowledgement, NO HUMAN_AGENT tag;
+    # the tag is sent later by a human agent from the operator desk.
+    ticket = SupportTicket.find_or_initialize_by(psid: sender_id)
+    ticket.last_message = text
+    ticket.status = "open"
+    ticket.last_customer_message_at = Time.current
+    ticket.save!
+    ack = "Thanks — a support agent will look into this and get back to you shortly (Ticket ##{ticket.id})."
+    client.send_message(sender_id, { text: ack }, access_token: access_token)
+  end
 
   # Flow 1: FAQ Auto-Responder
   def process_faq(client, sender_id, text, access_token)
