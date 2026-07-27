@@ -141,8 +141,7 @@
         <% nav = request.path %>
         <a href="/" class="<%= 'active' if nav == '/' %>">Home</a>
         <a href="/profiles/inbox" class="<%= 'active' if nav.start_with?('/profiles', '/orders') %>">Inbox</a>
-        <%# Automations hidden while focusing on Human Agent review — restore this link to re-enable %>
-        <a href="/onboarding/connect" class="<%= 'active' if nav.start_with?('/onboarding') %>">Connections</a>
+        <%# Automations and Connections hidden while focusing on Human Agent review — restore these links to re-enable %>
         <a href="/webhook_logs" class="<%= 'active' if nav.start_with?('/webhook_logs') %>">Activity</a>
 
         <% if logged_in? %>
