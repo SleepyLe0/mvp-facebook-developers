@@ -3,6 +3,7 @@
   <head>
     <title><%= content_for?(:title) ? "#{yield(:title)} · ReplyDesk" : "ReplyDesk" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="icon" href="/new-icon.png">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <style>
@@ -132,8 +133,9 @@
 
   <body>
     <div class="navbar">
-      <a href="/" style="text-decoration:none; color:white; font-size:1.2rem; font-weight:bold;">
-        💬 ReplyDesk
+      <a href="/" style="text-decoration:none; color:white; font-size:1.2rem; font-weight:bold; display:flex; align-items:center; gap:0.5rem;">
+        <img src="/new-icon.png" alt="ReplyDesk" style="height:28px; width:28px; border-radius:6px; object-fit:cover;">
+        ReplyDesk
       </a>
       <div class="nav-links">
         <% nav = request.path %>
