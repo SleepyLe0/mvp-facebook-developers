@@ -23,7 +23,6 @@
     <div class="stat"><div class="n"><%= @connected_page_count %></div><div class="l">Connected pages</div></div>
     <div class="stat"><div class="n"><%= @ticket_count %></div><div class="l">Support tickets</div></div>
     <div class="stat"><div class="n"><%= @profile_count %></div><div class="l">Customers seen</div></div>
-    <div class="stat"><div class="n"><%= @faq_count %></div><div class="l">Auto-reply rules</div></div>
   </div>
 
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
@@ -31,11 +30,6 @@
       <h3 style="margin-top:0;">📥 Inbox</h3>
       <p class="muted" style="font-size:0.9rem;">See customer conversations and reply to anyone escalated to a human agent.</p>
       <a href="/profiles/inbox" class="btn" style="font-size:0.85rem;">Open Inbox →</a>
-    </div>
-    <div class="card">
-      <h3 style="margin-top:0;">🤖 Automations</h3>
-      <p class="muted" style="font-size:0.9rem;">Review the questions ReplyDesk answers automatically on Messenger and Instagram.</p>
-      <a href="/automations" class="btn btn-secondary" style="font-size:0.85rem;">View automations →</a>
     </div>
     <div class="card">
       <h3 style="margin-top:0;">🔌 Connections</h3>
