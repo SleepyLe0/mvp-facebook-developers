@@ -58,8 +58,8 @@ class SessionsController < ApplicationController
     session[:user_id] = user.id
     flash[:notice] = "Successfully authenticated as #{user.display_name} via Facebook Login!"
 
-    # Redirect to Page Onboarding
-    redirect_to onboarding_connect_path
+    # Land on Home; first-run users get the "Connect your first page" CTA there.
+    redirect_to root_path
   end
 
   def destroy
