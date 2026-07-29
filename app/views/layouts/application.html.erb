@@ -4,6 +4,13 @@
     <title><%= content_for?(:title) ? "#{yield(:title)} · Army KlangTECH" : "Army KlangTECH" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link rel="icon" href="/new-icon.png">
+    <meta property="og:title" content="Army KlangTECH">
+    <meta property="og:description" content="Connect your Facebook Page, auto-answer common questions, and hand off tricky ones to a human.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<%= request.original_url %>">
+    <meta property="og:image" content="<%= request.base_url %>/new-icon.png">
+    <meta property="og:image:width" content="500">
+    <meta property="og:image:height" content="500">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <style>
