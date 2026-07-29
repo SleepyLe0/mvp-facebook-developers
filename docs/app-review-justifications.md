@@ -78,3 +78,36 @@ Record one end-to-end video and upload it (or the relevant portion) to each requ
 5. Open the conversation, type a reply, tick the human-agent confirmation, and send. The reply is delivered with the Human Agent tag.
 
 This single flow demonstrates pages_show_list, pages_manage_metadata, pages_messaging, and Human Agent.
+
+
+## Reviewer instructions (paste into the "instructions for reviewers" field)
+
+App: Army KlangTECH, a customer-support inbox for Facebook Pages, hosted at https://army.klangtech.com
+
+Facebook Login confirmation: The app uses Facebook Login for Business. A Page admin signs in with Facebook, grants pages_show_list, pages_manage_metadata, and pages_messaging, then connects a Page. The app auto-replies to customer messages (order lookup) and escalates unresolved cases to a human agent who replies using the Human Agent tag.
+
+1) Sign in (Facebook Login for Business)
+- Go to https://army.klangtech.com and click "Continue with Facebook".
+- Grant the requested permissions. You will land on the Home page.
+
+2) Connect a Page (uses pages_show_list and pages_manage_metadata)
+- Go to https://army.klangtech.com/onboarding/connect and click "Connect with Facebook".
+- The app calls GET /me/accounts to list the Pages you manage (pages_show_list). Select a Page.
+- The app calls POST /{page-id}/subscribed_apps to subscribe the Page to webhooks (pages_manage_metadata) and sets up the Messenger welcome screen. The Page then shows as "Active".
+
+3) Test messaging (uses pages_messaging)
+- From another Facebook account, send a message to the connected Page:
+  - Send "where is order 1001". The bot replies with the order status (test order numbers 1001 to 1008 are available).
+  - Send "my item arrived damaged". The message is not auto-resolved, so it is escalated: the bot replies that a human agent will follow up, and a ticket is created.
+- In the app, open Inbox then "Needs a human" to see the escalated conversation.
+
+4) Test Human Agent tag
+- In Inbox then "Needs a human", open the escalated conversation, type a reply, tick the "I confirm I am a human agent" checkbox, and click Send.
+- The reply is delivered using messaging_type=MESSAGE_TAG, tag=HUMAN_AGENT (used only by a human agent, within the 7-day window).
+
+Optional (auto-reply rules): Go to "Automations" to add an FAQ rule (topic, trigger words, reply). Messaging the Page with a trigger word then returns that reply automatically.
+
+Privacy Policy: https://army.klangtech.com/privacy
+Data Deletion: https://army.klangtech.com/data-deletion
+
+Note: order numbers 1001 to 1008 are global test data seeded in production, so they work for any Page the reviewer connects. Add the reviewer's Facebook account as a Tester (App Roles) so the login flow works while the app is in Development mode.
