@@ -10,23 +10,36 @@
         <tr>
           <th>Page</th>
           <th>Category</th>
+          <th>Status</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
         <% @pages.each do |p| %>
+          <% linked = @connected_ids.include?(p['id']) %>
           <tr>
             <td>
               <strong><%= p['name'] %></strong>
               <% if Rails.env.development? %><div class="muted" style="font-size:0.75rem;"><%= p['id'] %></div><% end %>
             </td>
             <td class="muted"><%= p['category'] %></td>
+            <td>
+              <% if linked %>
+                <span class="badge badge-green">Connected</span>
+              <% else %>
+                <span class="muted">Not connected</span>
+              <% end %>
+            </td>
             <td style="text-align:right;">
               <%= form_with url: onboarding_subscribe_path, method: :post, local: true do |f| %>
                 <input type="hidden" name="page_id" value="<%= p['id'] %>">
                 <input type="hidden" name="page_name" value="<%= p['name'] %>">
                 <input type="hidden" name="page_access_token" value="<%= p['access_token'] %>">
-                <button type="submit" class="btn">Connect this page</button>
+                <% if linked %>
+                  <button type="submit" class="btn btn-secondary">Reconnect</button>
+                <% else %>
+                  <button type="submit" class="btn">Connect this page</button>
+                <% end %>
               <% end %>
             </td>
           </tr>

@@ -46,6 +46,7 @@ module Onboarding
       if pages_response["data"].present?
         @pages = pages_response["data"]
         @user_token = final_user_token
+        @connected_ids = current_user.connected_pages.pluck(:page_id).to_set
       else
         flash[:alert] = "Could not fetch pages: #{pages_response['error']&.dig('message') || 'No pages returned'}"
         redirect_to onboarding_connect_path
