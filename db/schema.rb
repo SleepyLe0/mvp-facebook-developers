@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_29_030017) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_29_070236) do
   create_table "connected_pages", force: :cascade do |t|
     t.text "access_token"
     t.datetime "created_at", null: false
@@ -54,7 +54,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_030017) do
     t.string "psid", null: false
     t.string "status", default: "open"
     t.datetime "updated_at", null: false
+    t.integer "user_id"
     t.index ["psid"], name: "index_support_tickets_on_psid"
+    t.index ["user_id"], name: "index_support_tickets_on_user_id"
   end
 
   create_table "user_profiles", force: :cascade do |t|
@@ -92,5 +94,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_030017) do
 
   add_foreign_key "connected_pages", "users"
   add_foreign_key "faq_entries", "users"
+  add_foreign_key "support_tickets", "users"
   add_foreign_key "webhook_logs", "users"
 end

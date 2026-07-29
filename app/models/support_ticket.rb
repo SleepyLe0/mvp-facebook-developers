@@ -1,4 +1,6 @@
 class SupportTicket < ApplicationRecord
+  belongs_to :user, optional: true
+
   validates :psid, presence: true
 
   scope :open_tickets, -> { where(status: "open") }

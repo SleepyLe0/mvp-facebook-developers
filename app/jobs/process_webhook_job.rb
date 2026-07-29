@@ -30,7 +30,7 @@ class ProcessWebhookJob < ApplicationJob
         # Get Started button and Persistent Menu taps arrive as postbacks (no message).
         if (postback = event["postback"])
           next if sender_id.blank?
-          handle_menu_action(client, sender_id, postback["payload"], page_access_token)
+          handle_menu_action(client, sender_id, postback["payload"], page_access_token, page_owner)
           next
         end
 
@@ -45,6 +45,7 @@ class ProcessWebhookJob < ApplicationJob
 
           # Record Echo into Support Ticket history for operator visibility
           ticket = SupportTicket.find_or_initialize_by(psid: recipient_id)
+          ticket.user ||= page_owner
           ticket.last_message = "💬 [Echo from #{app_id_source}]: #{echo_text}"
           ticket.save!
           next
@@ -57,14 +58,14 @@ class ProcessWebhookJob < ApplicationJob
         case flow_type.to_s
         when "unified"
           if MENU_PAYLOADS.include?(message_text)
-            handle_menu_action(client, sender_id, message_text, page_access_token)
+            handle_menu_action(client, sender_id, message_text, page_access_token, page_owner)
           else
             process_unified(client, sender_id, message_text, page_access_token, page_owner)
           end
         when "faq"
           process_faq(client, sender_id, message_text, page_access_token, page_owner)
         when "orders"
-          process_orders(client, sender_id, message_text, page_access_token)
+          process_orders(client, sender_id, message_text, page_access_token, page_owner)
         when "profiles"
           process_profiles(client, sender_id, message_text, page_access_token)
         when "onboarding"
@@ -87,7 +88,7 @@ class ProcessWebhookJob < ApplicationJob
   # This is the single endpoint used in production (/webhook).
   def process_unified(client, sender_id, text, access_token, owner = nil)
     # Bot takeover: a human is handling this conversation → record + stay silent.
-    existing = SupportTicket.find_by(psid: sender_id)
+    existing = ticket_scope(owner).find_by(psid: sender_id)
     if existing&.handled_by_human
       existing.update!(last_message: text, last_customer_message_at: Time.current, status: "open")
       return
@@ -109,7 +110,7 @@ class ProcessWebhookJob < ApplicationJob
     end
 
     # 3. No match → escalate to a human (plain ack, NO HUMAN_AGENT tag).
-    escalate_to_human(client, sender_id, text, access_token)
+    escalate_to_human(client, sender_id, text, access_token, owner)
   end
 
   # Scope FAQ matching to the page owner's rules (fall back to unowned rules).
@@ -117,13 +118,18 @@ class ProcessWebhookJob < ApplicationJob
     owner ? owner.faq_entries : FaqEntry.where(user_id: nil)
   end
 
+  # Scope support tickets to the page owner (fall back to unowned).
+  def ticket_scope(owner)
+    owner ? owner.support_tickets : SupportTicket.where(user_id: nil)
+  end
+
   # Welcome screen: Get Started button and Persistent Menu taps land here.
-  def handle_menu_action(client, sender_id, payload, access_token)
+  def handle_menu_action(client, sender_id, payload, access_token, owner = nil)
     case payload
     when "CHECK_ORDER"
       client.send_message(sender_id, { text: "Sure! Please send your order number (for example, 1001)." }, access_token: access_token)
     when "TALK_TO_HUMAN"
-      escalate_to_human(client, sender_id, "Requested a human agent", access_token)
+      escalate_to_human(client, sender_id, "Requested a human agent", access_token, owner)
     else # GET_STARTED or anything unknown
       send_welcome(client, sender_id, access_token)
     end
@@ -139,8 +145,9 @@ class ProcessWebhookJob < ApplicationJob
   end
 
   # Create/refresh a human ticket and send a plain acknowledgement (never tagged).
-  def escalate_to_human(client, sender_id, text, access_token)
-    ticket = SupportTicket.find_or_initialize_by(psid: sender_id)
+  def escalate_to_human(client, sender_id, text, access_token, owner = nil)
+    ticket = ticket_scope(owner).find_or_initialize_by(psid: sender_id)
+    ticket.user ||= owner
     ticket.last_message = text
     ticket.status = "open"
     ticket.last_customer_message_at = Time.current
@@ -165,10 +172,10 @@ class ProcessWebhookJob < ApplicationJob
   end
 
   # Flow 2: Order Inquiry & Human Handoff
-  def process_orders(client, sender_id, text, access_token)
+  def process_orders(client, sender_id, text, access_token, owner = nil)
     # Bot takeover: if a human agent is handling this conversation, record the
     # message but stay silent — the bot must not butt in mid-handoff (UChat-style).
-    existing = SupportTicket.find_by(psid: sender_id)
+    existing = ticket_scope(owner).find_by(psid: sender_id)
     if existing&.handled_by_human
       existing.update!(last_message: text, last_customer_message_at: Time.current, status: "open")
       return
@@ -180,7 +187,8 @@ class ProcessWebhookJob < ApplicationJob
       reply_text = "📦 Order #{order.order_number} Status: #{order.status.upcase}. Customer: #{order.customer_name}. Items: #{order.item_details}."
       client.send_message(sender_id, { text: reply_text }, access_token: access_token)
     else
-      ticket = SupportTicket.find_or_initialize_by(psid: sender_id)
+      ticket = ticket_scope(owner).find_or_initialize_by(psid: sender_id)
+      ticket.user ||= owner
       ticket.last_message = text
       ticket.status = "open"
       ticket.last_customer_message_at = Time.current

@@ -3,7 +3,7 @@ module Orders
     before_action :require_user!
 
     def index
-      @tickets = SupportTicket.recent
+      @tickets = current_user.support_tickets.recent
       @page = current_user.connected_pages.first
       @threads = {} # psid => oldest-first messages
 
@@ -21,7 +21,7 @@ module Orders
     end
 
     def reply
-      ticket = SupportTicket.find(params[:id])
+      ticket = current_user.support_tickets.find(params[:id])
       reply_text = params[:reply_text]
       category = params[:category]
       confirmation = params[:human_confirmation]
@@ -63,7 +63,7 @@ module Orders
 
     # Manual bot pause/resume (UChat-style takeover toggle)
     def toggle_bot
-      ticket = SupportTicket.find(params[:id])
+      ticket = current_user.support_tickets.find(params[:id])
       ticket.update!(handled_by_human: !ticket.handled_by_human)
       flash[:notice] = ticket.handled_by_human ? "You’ve taken over — the bot is paused for this conversation." : "Bot resumed for this conversation."
       redirect_to orders_tickets_path

@@ -10,7 +10,7 @@ class DashboardController < ApplicationController
     # Add page/user ownership if this goes real multi-tenant.
     @faq_count = current_user.faq_entries.count
     @order_count = Order.count
-    @ticket_count = SupportTicket.count
+    @ticket_count = current_user.support_tickets.count
     @profile_count = UserProfile.count
     @recent_logs = current_user.webhook_logs.order(created_at: :desc).limit(10)
   end
