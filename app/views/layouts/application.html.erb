@@ -11,6 +11,7 @@
     <meta property="og:image" content="<%= request.base_url %>/new-icon.png">
     <meta property="og:image:width" content="500">
     <meta property="og:image:height" content="500">
+    <% if ENV["FB_APP_ID"].present? %><meta property="fb:app_id" content="<%= ENV["FB_APP_ID"] %>"><% end %>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <style>
