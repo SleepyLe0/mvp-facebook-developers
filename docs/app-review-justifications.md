@@ -1,74 +1,80 @@
 # Army KlangTECH — App Review Justifications
 
-Paste each block into the matching permission/feature request in
-App Dashboard → App Review → Permissions and Features.
+Copy each block below into the matching permission/feature request in
+App Dashboard → App Review. Write in English (Meta reviews in English).
+Each request also needs a screencast upload and the confirmation checkbox ticked.
 
-> Before submitting: complete Business Verification, set the Privacy Policy URL
-> (`/privacy`) and Data Deletion URL (`/data-deletion`), host on a stable public
-> URL, and add the reviewer's Facebook account as a Tester (App Roles) so the
-> flow works in Development mode.
+Before submitting: complete Business Verification, set the Privacy Policy URL
+(https://army.klangtech.com/privacy) and Data Deletion URL
+(https://army.klangtech.com/data-deletion), keep the app hosted at
+https://army.klangtech.com, and add the reviewer's Facebook account as a Tester
+(App Roles) so the flow works in Development mode.
 
----
-
-## pages_messaging
-
-Army KlangTECH is a customer-support inbox for Facebook Pages. We use `pages_messaging`
-to receive messages that customers send to a connected Page (via webhooks) and to
-send replies on the Page's behalf. Replies are either automated answers to common
-questions and order-status lookups, or messages written by a human support agent.
-We only send messages in response to a customer who first messaged the Page; we do
-not send promotional or bulk messages.
-
-**How to test:**
-1. Log in with Facebook and connect a Page.
-2. From another account, message the Page: `where is order 1001` — Army KlangTECH replies
-   with the order status automatically.
-3. Message something unrecognized (e.g. `my item arrived damaged`) — the conversation
-   is escalated to the agent inbox for a human to answer.
-
----
-
-## pages_manage_metadata
-
-We use `pages_manage_metadata` to programmatically subscribe the connected Page to
-our webhook (`POST /{page-id}/subscribed_apps`) during onboarding, so the Page can
-receive message events without the admin having to configure webhooks manually in
-the App Dashboard.
-
-**How to test:** Connect a Page in the app. Army KlangTECH subscribes it to the webhook
-and shows its status as "Active" on the Connections screen.
-
----
 
 ## pages_show_list
 
-We use `pages_show_list` to retrieve the list of Pages the logged-in user manages
-(`GET /me/accounts`) so they can choose which Page to connect to Army KlangTECH.
+Army KlangTECH is a customer-support inbox for Facebook Pages. We use pages_show_list to retrieve the list of Pages the logged-in person manages (GET /me/accounts) during onboarding, so they can choose which Page to connect to our app.
 
-**How to test:** After signing in with Facebook, the app displays the user's Pages
-and lets them pick one to connect.
+Why it is necessary: the app cannot receive or send a Page's messages until the person selects and connects a specific Page they manage. Listing their Pages is the only way to let them pick the correct one.
 
----
+Benefit to the person using the app: they see all their manageable Pages and connect the right one in a single click, instead of manually finding and entering a Page ID or access token.
 
-## Human Agent (Advanced Access feature)
+How to test:
+1. Go to https://army.klangtech.com and click "Continue with Facebook".
+2. Grant access. The app calls /me/accounts and shows the Pages you manage.
+3. Select a Page to connect it.
 
-Army KlangTECH escalates customer inquiries that our automation cannot resolve to a human
-support agent. Because investigating an issue (for example a damaged order or a
-refund) can take longer than Meta's standard 24-hour window, the human agent uses the
-Human Agent tag to deliver their personally-written reply within the permitted 7-day
-window. The tag is never used for automated, promotional, or bulk messages — only for
-a human agent responding to a specific customer inquiry. Before sending, the app
-requires the agent to confirm "I am a human agent," and it blocks sending once the
-7-day window has expired.
 
-**How to test:**
-1. From a customer account, send the Page a message our bot cannot auto-answer — it
-   appears in the "Needs a human" queue.
-2. In Army KlangTECH, open that conversation, read the thread, type a reply, tick the
-   "I confirm I am a human agent" box, and send.
+## pages_manage_metadata
+
+We use pages_manage_metadata to programmatically subscribe the connected Page to our webhook (POST /{page-id}/subscribed_apps) during onboarding, and to set the Messenger welcome screen (Get Started button and persistent menu) via the Messenger Profile API.
+
+Why it is necessary: without subscribing the Page to the app's webhook, Army KlangTECH would receive no message events, so no auto-replies or human handoff could work.
+
+Benefit to the person using the app: they connect a Page and it is instantly ready to receive and answer messages, with no manual webhook configuration in the App Dashboard.
+
+How to test:
+1. Sign in with Facebook and connect a Page.
+2. On connect, the app subscribes the Page to webhooks and sets up the welcome screen. The Page shows as "Active".
+3. Message the Page. The message is received by the app.
+
+
+## pages_messaging
+
+Army KlangTECH uses pages_messaging to receive messages that customers send to a connected Page (via webhooks) and to send replies on the Page's behalf. Replies are either automated answers to common questions and order-status lookups, or messages written by a human support agent. We only reply to customers who first messaged the Page, and we never send promotional or bulk messages.
+
+Why it is necessary: receiving and answering Page messages is the core function of the app.
+
+Benefit to the person using the app: businesses answer customer questions instantly (FAQ and order status) and hand off complex cases to a human agent, all from one inbox.
+
+How to test:
+1. Sign in with Facebook and connect a Page.
+2. From another account, message the Page "where is order 1001". The app replies with the order status.
+3. Message something unrecognized such as "my item arrived damaged". It is escalated to the human agent inbox.
+
+
+## Human Agent (Advanced Access feature — requested separately)
+
+Army KlangTECH escalates customer inquiries that our automation cannot resolve to a human support agent. Because investigating an issue (for example a damaged order or a refund) can take longer than Meta's standard 24-hour window, the human agent uses the Human Agent tag to deliver their personally written reply within the permitted 7-day window. The tag is never used for automated, promotional, or bulk messages, only for a human agent responding to a specific customer inquiry. Before sending, the app requires the agent to confirm "I am a human agent", and it blocks sending once the 7-day window has expired.
+
+How to test:
+1. From a customer account, send the Page a message the bot cannot auto-answer. It appears in the "Needs a human" queue.
+2. In Army KlangTECH, open that conversation, read the thread, type a reply, tick the "I confirm I am a human agent" box, and send.
 3. The message is delivered to the customer using the Human Agent tag.
 
----
 
 ## public_profile
-Granted by default — no review required. Used for the user's basic identity at login.
+
+Granted by default. No review required. Used for the person's basic identity at login.
+
+
+## Screencast (one video covers all)
+
+Record one end-to-end video and upload it (or the relevant portion) to each request:
+1. Sign in with Facebook at https://army.klangtech.com.
+2. See and select the Page you manage, then connect it.
+3. From another account, message the Page "where is order 1001". The bot replies with the order status.
+4. Message something unrecognized. It lands in the "Needs a human" queue.
+5. Open the conversation, type a reply, tick the human-agent confirmation, and send. The reply is delivered with the Human Agent tag.
+
+This single flow demonstrates pages_show_list, pages_manage_metadata, pages_messaging, and Human Agent.
