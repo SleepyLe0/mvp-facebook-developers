@@ -17,6 +17,9 @@ class ProcessWebhookJob < ApplicationJob
       entry_page_id = entry["id"]
       connected_page = ConnectedPage.find_by(page_id: entry_page_id)
       page_access_token = connected_page&.access_token
+      page_owner = connected_page&.user
+      # Attribute this activity log to the page's owner so it stays per-user.
+      log.update(user: page_owner) if page_owner
 
       messaging_events = entry["messaging"] || []
       messaging_events.each do |event|
@@ -56,10 +59,10 @@ class ProcessWebhookJob < ApplicationJob
           if MENU_PAYLOADS.include?(message_text)
             handle_menu_action(client, sender_id, message_text, page_access_token)
           else
-            process_unified(client, sender_id, message_text, page_access_token)
+            process_unified(client, sender_id, message_text, page_access_token, page_owner)
           end
         when "faq"
-          process_faq(client, sender_id, message_text, page_access_token)
+          process_faq(client, sender_id, message_text, page_access_token, page_owner)
         when "orders"
           process_orders(client, sender_id, message_text, page_access_token)
         when "profiles"
@@ -82,7 +85,7 @@ class ProcessWebhookJob < ApplicationJob
 
   # Unified support flow: FAQ auto-reply → order lookup → human fallback.
   # This is the single endpoint used in production (/webhook).
-  def process_unified(client, sender_id, text, access_token)
+  def process_unified(client, sender_id, text, access_token, owner = nil)
     # Bot takeover: a human is handling this conversation → record + stay silent.
     existing = SupportTicket.find_by(psid: sender_id)
     if existing&.handled_by_human
@@ -90,8 +93,8 @@ class ProcessWebhookJob < ApplicationJob
       return
     end
 
-    # 1. FAQ rule match → instant auto-reply (no tag).
-    faq = FaqEntry.search_answer(text)
+    # 1. FAQ rule match → instant auto-reply (no tag). Only the page owner's rules.
+    faq = faq_scope(owner).search_answer(text)
     if faq
       client.send_message(sender_id, { text: faq.answer }, access_token: access_token)
       return
@@ -107,6 +110,11 @@ class ProcessWebhookJob < ApplicationJob
 
     # 3. No match → escalate to a human (plain ack, NO HUMAN_AGENT tag).
     escalate_to_human(client, sender_id, text, access_token)
+  end
+
+  # Scope FAQ matching to the page owner's rules (fall back to unowned rules).
+  def faq_scope(owner)
+    owner ? owner.faq_entries : FaqEntry.where(user_id: nil)
   end
 
   # Welcome screen: Get Started button and Persistent Menu taps land here.
@@ -142,8 +150,8 @@ class ProcessWebhookJob < ApplicationJob
   end
 
   # Flow 1: FAQ Auto-Responder
-  def process_faq(client, sender_id, text, access_token)
-    matched_faq = FaqEntry.search_answer(text)
+  def process_faq(client, sender_id, text, access_token, owner = nil)
+    matched_faq = faq_scope(owner).search_answer(text)
     reply_text = matched_faq ? matched_faq.answer : "Hello! I'm the FAQ Auto-Responder Bot. How can I help you today?"
 
     quick_replies = [

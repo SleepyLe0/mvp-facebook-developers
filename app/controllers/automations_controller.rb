@@ -2,11 +2,11 @@ class AutomationsController < ApplicationController
   before_action :require_user!
 
   def index
-    @faqs = FaqEntry.order(created_at: :desc)
+    @faqs = current_user.faq_entries.order(created_at: :desc)
   end
 
   def create_rule
-    faq = FaqEntry.new(question: params[:question], keywords: params[:keywords], answer: params[:answer])
+    faq = current_user.faq_entries.new(question: params[:question], keywords: params[:keywords], answer: params[:answer])
     if faq.save
       flash[:notice] = "Auto-reply rule added."
     else
@@ -16,7 +16,7 @@ class AutomationsController < ApplicationController
   end
 
   def destroy_rule
-    FaqEntry.find_by(id: params[:id])&.destroy
+    current_user.faq_entries.find_by(id: params[:id])&.destroy
     flash[:notice] = "Rule removed."
     redirect_to automations_path
   end

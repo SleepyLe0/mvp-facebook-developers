@@ -6,10 +6,10 @@ class DashboardController < ApplicationController
     @connected_page_count = @user_pages.count
     # ponytail: tickets/profiles/logs have no owner column yet, so these stay global.
     # Add page/user ownership if this goes real multi-tenant.
-    @faq_count = FaqEntry.count
+    @faq_count = current_user.faq_entries.count
     @order_count = Order.count
     @ticket_count = SupportTicket.count
     @profile_count = UserProfile.count
-    @recent_logs = WebhookLog.order(created_at: :desc).limit(10)
+    @recent_logs = current_user.webhook_logs.order(created_at: :desc).limit(10)
   end
 end

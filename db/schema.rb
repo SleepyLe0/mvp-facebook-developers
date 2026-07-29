@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_27_103002) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_29_030017) do
   create_table "connected_pages", force: :cascade do |t|
     t.text "access_token"
     t.datetime "created_at", null: false
@@ -30,6 +30,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_27_103002) do
     t.string "keywords"
     t.string "question", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id"
+    t.index ["user_id"], name: "index_faq_entries_on_user_id"
   end
 
   create_table "orders", force: :cascade do |t|
@@ -84,7 +86,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_27_103002) do
     t.text "payload"
     t.string "status"
     t.datetime "updated_at", null: false
+    t.integer "user_id"
+    t.index ["user_id"], name: "index_webhook_logs_on_user_id"
   end
 
   add_foreign_key "connected_pages", "users"
+  add_foreign_key "faq_entries", "users"
+  add_foreign_key "webhook_logs", "users"
 end

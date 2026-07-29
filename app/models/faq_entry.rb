@@ -1,6 +1,10 @@
 class FaqEntry < ApplicationRecord
+  belongs_to :user, optional: true
+
   validates :question, :answer, presence: true
 
+  # Respects the current scope, so `user.faq_entries.search_answer(text)`
+  # only matches that user's rules.
   def self.search_answer(text)
     return nil if text.blank?
 
