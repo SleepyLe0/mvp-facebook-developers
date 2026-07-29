@@ -45,7 +45,7 @@
                     <%= m["message"].presence || "(no text)" %>
                   </div>
                   <div class="muted" style="font-size:0.68rem; margin-top:0.15rem; text-align:<%= outgoing ? 'right' : 'left' %>;">
-                    <%= m.dig("from", "name") || (outgoing ? "You" : "Customer") %> · <%= m["created_time"] %>
+                    <%= m.dig("from", "name") || (outgoing ? "You" : "Customer") %> · <%= format_chat_time(m["created_time"]) %>
                   </div>
                 </div>
               <% end %>

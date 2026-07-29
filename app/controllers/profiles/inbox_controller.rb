@@ -80,7 +80,7 @@ module Profiles
         text: m["message"],
         outgoing: m.dig("from", "id").to_s == @page&.page_id.to_s,
         name: m.dig("from", "name"),
-        time: m["created_time"]
+        time: helpers.format_chat_time(m["created_time"])
       }
     end
   end
