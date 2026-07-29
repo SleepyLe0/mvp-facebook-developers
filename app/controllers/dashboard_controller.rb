@@ -1,7 +1,9 @@
 class DashboardController < ApplicationController
-  before_action :require_user!
-
   def index
+    # Logged-out visitors (and link scrapers) get the sign-in page at the root
+    # with a 200 + OG tags, instead of a 302 redirect that hides the tags.
+    return render "sessions/new" unless logged_in?
+
     @user_pages = current_user.connected_pages
     @connected_page_count = @user_pages.count
     # ponytail: tickets/profiles/logs have no owner column yet, so these stay global.
