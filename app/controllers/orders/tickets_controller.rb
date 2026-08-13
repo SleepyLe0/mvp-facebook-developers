@@ -27,7 +27,7 @@ module Orders
       confirmation = params[:human_confirmation]
 
       if confirmation != "1"
-        flash[:alert] = "⚠️ Human Operator Verification Required: You must check the human confirmation box before issuing a message using the HUMAN_AGENT tag."
+        flash[:alert] = "⚠️ Human Operator Verification Required: unlock the composer and accept the Human Agent warning before sending a message with the HUMAN_AGENT tag."
         return redirect_to orders_tickets_path
       end
 
