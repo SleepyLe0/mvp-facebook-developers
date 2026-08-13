@@ -2,22 +2,9 @@ module Orders
   class TicketsController < ApplicationController
     before_action :require_user!
 
+    # Merged into the unified inbox — the "Needs a human" tab is gone.
     def index
-      @tickets = current_user.support_tickets.recent
-      @page = current_user.connected_pages.first
-      @threads = {} # psid => oldest-first messages
-
-      if @page
-        # ponytail: one Graph call for all threads; paginate if the queue gets large
-        client = MetaGraphClient.new
-        raw = client.get_page_conversations(@page.page_id, access_token: @page.access_token)
-        (raw["data"] || []).each do |thread|
-          parts = thread.dig("participants", "data") || []
-          customer = parts.find { |p| p["id"].to_s != @page.page_id.to_s }
-          next unless customer
-          @threads[customer["id"]] = (thread.dig("messages", "data") || []).reverse
-        end
-      end
+      redirect_to profiles_inbox_path
     end
 
     def reply
