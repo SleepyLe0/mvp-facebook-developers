@@ -88,8 +88,13 @@
               <button type="submit" class="btn" style="flex:0 0 auto;">Send</button>
             </div>
           <% end %>
+        <% elsif !@within_7d %>
+          <!-- Outside 7 days: nothing can be sent until the customer messages again -->
+          <div style="border-top:1px solid var(--border-color); padding:1.1rem 0.75rem; text-align:center;">
+            <span class="muted" style="font-size:0.85rem;">💤 This conversation is closed — it’s been more than 7 days since the customer’s last message. You can’t send a message until they message you again.</span>
+          </div>
         <% else %>
-          <!-- Outside 24h: standard replies disabled — Human Agent tag only -->
+          <!-- 24h–7d: standard replies disabled — Human Agent tag only -->
           <div style="border-top:1px solid var(--border-color); padding:0.75rem;">
             <div style="font-size:0.85rem; color:#fb923c; margin-bottom:0.6rem;">
               ⏳ This conversation is outside the 24-hour window — standard replies can’t be sent. You can reply using the Human Agent tag (allowed for up to 7 days).
