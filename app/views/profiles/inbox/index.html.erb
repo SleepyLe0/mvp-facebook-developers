@@ -73,19 +73,34 @@
           <% end %>
         </div>
 
-        <!-- Composer (full-width, at the foot) -->
-        <%= form_with url: profiles_inbox_reply_path, method: :post, local: true, id: "composer", style: "border-top:1px solid var(--border-color); padding:0.75rem;" do %>
-          <input type="hidden" name="psid" value="<%= @active_psid %>">
-          <input type="hidden" name="human_agent" value="0">
-          <input type="hidden" name="human_confirmation" value="">
-          <div style="display:flex; gap:0.5rem; align-items:center;">
-            <input type="text" name="body" id="composer-body" placeholder="Type a message…" autocomplete="off" autofocus
-                   style="flex:1 1 auto; min-width:0; padding:0.85rem 1rem; font-size:1rem; border-radius:8px; border:1px solid var(--border-color); background:#0f172a; color:white; box-sizing:border-box;">
-            <button type="submit" class="btn" style="flex:0 0 auto;">Send</button>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-top:0.5rem;">
-            <span class="muted" style="font-size:0.75rem;">Standard replies work within 24h of the customer’s last message.</span>
-            <button type="button" class="btn btn-secondary" data-ha-open style="font-size:0.8rem; background:#f97316; color:white;">🔒 Reply with Human Agent tag</button>
+        <!-- Composer at the foot -->
+        <% if @within_window %>
+          <!-- Within 24h: normal Messenger reply -->
+          <%= form_with url: profiles_inbox_reply_path, method: :post, local: true, id: "composer", style: "border-top:1px solid var(--border-color); padding:0.75rem;" do %>
+            <input type="hidden" name="psid" value="<%= @active_psid %>">
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <input type="text" name="body" placeholder="Type a message…" autocomplete="off" autofocus
+                     style="flex:1 1 auto; min-width:0; padding:0.85rem 1rem; font-size:1rem; border-radius:8px; border:1px solid var(--border-color); background:#0f172a; color:white; box-sizing:border-box;">
+              <button type="submit" class="btn" style="flex:0 0 auto;">Send</button>
+            </div>
+          <% end %>
+        <% else %>
+          <!-- Outside 24h: standard replies disabled — Human Agent tag only -->
+          <div style="border-top:1px solid var(--border-color); padding:0.75rem;">
+            <div style="font-size:0.85rem; color:#fb923c; margin-bottom:0.6rem;">
+              ⏳ This conversation is outside the 24-hour window — standard replies can’t be sent. You can reply using the Human Agent tag (allowed for up to 7 days).
+            </div>
+            <%= form_with url: profiles_inbox_reply_path, method: :post, local: true, id: "composer", html: { "data-ha-form": true } do %>
+              <input type="hidden" name="psid" value="<%= @active_psid %>">
+              <input type="hidden" name="human_agent" value="1">
+              <input type="hidden" name="human_confirmation" value="">
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <input type="text" name="body" placeholder="Locked — unlock the Human Agent tag to type" autocomplete="off" disabled data-locked
+                       style="flex:1 1 auto; min-width:0; padding:0.85rem 1rem; font-size:1rem; border-radius:8px; border:1px solid var(--border-color); background:#0f172a; color:white; box-sizing:border-box;">
+                <button type="button" class="btn" style="flex:0 0 auto; background:#f97316; color:white;" data-ha-open>🔒 Use Human Agent tag…</button>
+                <button type="submit" class="btn" style="flex:0 0 auto; background:#f97316; color:white; display:none;" data-ha-submit>Send →</button>
+              </div>
+            <% end %>
           </div>
         <% end %>
       <% else %>
@@ -114,22 +129,23 @@
 
   <script>
     (function () {
-      // ---- Human Agent gated send ----
+      // ---- Human Agent gated composer (outside-window only) ----
       var form = document.getElementById("composer");
       var dlg = document.getElementById("ha-warning");
-      if (form && dlg) {
+      if (form && dlg && form.querySelector("[data-ha-open]")) {
         var haBtn = form.querySelector("[data-ha-open]");
-        var body = form.querySelector("[name=body]");
-        haBtn && haBtn.addEventListener("click", function () {
-          if (!body.value.trim()) { body.focus(); return; }
-          dlg.showModal();
-        });
+        haBtn.addEventListener("click", function () { dlg.showModal(); });
         dlg.querySelector("[data-ha-cancel]").addEventListener("click", function () { dlg.close(); });
         dlg.querySelector("[data-ha-agree]").addEventListener("click", function () {
           dlg.close();
-          form.querySelector("[name=human_agent]").value = "1";
           form.querySelector("[name=human_confirmation]").value = "1";
-          form.submit();
+          var body = form.querySelector("[name=body]");
+          body.disabled = false;
+          body.placeholder = "Type a personal reply to the customer…";
+          body.focus();
+          haBtn.style.display = "none";
+          var submitBtn = form.querySelector("[data-ha-submit]");
+          if (submitBtn) submitBtn.style.display = "";
         });
       }
 

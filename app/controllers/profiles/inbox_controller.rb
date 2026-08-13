@@ -12,6 +12,8 @@ module Profiles
       @active_ticket = @tickets_by_psid[@active_psid]
       # Graph returns newest-first; show oldest-first like a normal chat
       @thread = (active&.dig(:messages) || []).reverse
+      # Standard messaging is only allowed within 24h of the customer's last message.
+      @within_window = window_open_24h?(@thread)
     end
 
     # Polled by the chat view for near-real-time updates — one Graph call powers
@@ -83,6 +85,18 @@ module Profiles
     def ticket_flag(ticket)
       return nil if ticket.nil?
       ticket.handled_by_human ? "handling" : "needs_human"
+    end
+
+    # True if the customer's most recent inbound message is within 24 hours,
+    # i.e. a standard (untagged) reply is still allowed.
+    def window_open_24h?(thread)
+      return false if @page.nil? || thread.blank?
+      last_inbound = thread.reverse.find { |m| m.dig("from", "id").to_s != @page.page_id.to_s }
+      time = last_inbound && last_inbound["created_time"]
+      return false if time.blank?
+      Time.parse(time) > 24.hours.ago
+    rescue ArgumentError
+      false
     end
 
     def fetch_conversations
