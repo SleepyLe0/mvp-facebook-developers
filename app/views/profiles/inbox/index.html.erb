@@ -45,13 +45,17 @@
     <div class="card" style="display:flex; flex-direction:column; height:74vh; padding:0;">
       <% if @active_psid %>
         <!-- Header -->
-        <div style="padding:1rem 1.25rem; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+        <div style="padding:1rem 1.25rem; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
           <strong style="font-size:1.05rem;"><%= @active_name %></strong>
-          <% if @active_ticket&.handled_by_human %>
-            <span class="badge badge-green">🙋 You’re handling</span>
-          <% elsif @active_ticket %>
-            <span class="badge badge-orange">Needs a human</span>
-          <% end %>
+          <div style="display:flex; gap:0.5rem; align-items:center;">
+            <% if @active_ticket&.handled_by_human %>
+              <span class="badge badge-green">🙋 You’re handling · bot paused</span>
+              <%= button_to "▶ Resume bot", profiles_inbox_toggle_bot_path(psid: @active_psid), method: :post, class: "btn btn-secondary", style: "font-size:0.8rem; padding:0.35rem 0.7rem;" %>
+            <% else %>
+              <% if @active_ticket %><span class="badge badge-orange">Needs a human</span><% end %>
+              <%= button_to "🙋 Take over", profiles_inbox_toggle_bot_path(psid: @active_psid), method: :post, class: "btn btn-secondary", style: "font-size:0.8rem; padding:0.35rem 0.7rem;" %>
+            <% end %>
+          </div>
         </div>
 
         <!-- Messages -->

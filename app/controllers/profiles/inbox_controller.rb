@@ -69,6 +69,17 @@ module Profiles
       end
     end
 
+    # Take over (pause the bot) / resume the bot for a conversation (by psid).
+    def toggle_bot
+      psid = params[:psid]
+      ticket = current_user.support_tickets.find_or_initialize_by(psid: psid)
+      ticket.status ||= "open"
+      ticket.handled_by_human = !ticket.handled_by_human
+      ticket.save!
+      flash[:notice] = ticket.handled_by_human ? "You’ve taken over — the bot is paused for this conversation." : "Bot resumed for this conversation."
+      redirect_to profiles_inbox_path(psid: psid)
+    end
+
     private
 
     def bounce(psid, notice: nil, alert: nil)

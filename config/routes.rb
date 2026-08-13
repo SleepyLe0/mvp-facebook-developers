@@ -46,6 +46,7 @@ Rails.application.routes.draw do
     get "inbox", to: "inbox#index"
     get "inbox/poll", to: "inbox#poll", as: :inbox_poll
     post "inbox/reply", to: "inbox#reply", as: :inbox_reply
+    post "inbox/toggle_bot", to: "inbox#toggle_bot", as: :inbox_toggle_bot
   end
 
   # Flow 4: Page Connect / Onboarding Flow
