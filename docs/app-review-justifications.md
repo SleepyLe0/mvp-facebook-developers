@@ -63,12 +63,15 @@ The message composer is window-aware and enforces Meta's rules so the tag is onl
 - After 7 days: the composer is hidden entirely and no message can be sent until the customer messages again.
 
 How to test (end-to-end):
-1. From a customer account, send the Page a message the bot cannot auto-answer (for example "my item arrived damaged"). The bot escalates it, and the conversation appears in the Army KlangTECH Inbox flagged "Needs reply".
-2. In Army KlangTECH, open the Inbox and select that conversation. For a conversation whose last customer message is more than 24 hours old, the standard reply box is hidden and only the Human Agent option is shown.
-3. Click "Use Human Agent tag". A warning appears explaining the tag is only for genuine support issues within the 7-day window.
-4. Click "I understand, Continue" to confirm you are a human agent. The reply box unlocks.
-5. Type a personal reply and click Send. The message is delivered to the customer using the Human Agent tag (messaging_type=MESSAGE_TAG, tag=HUMAN_AGENT).
-6. If more than 7 days have passed since the customer's last message, the composer is hidden and no message can be sent, demonstrating that the app blocks the tag outside the allowed window.
+1. Go to https://army.klangtech.com and click "Continue with Facebook".
+2. In the Facebook login dialog, sign in and grant the app access to the requested permissions (pages_show_list, pages_manage_metadata, pages_messaging). You are returned to the app, signed in.
+3. Open "Connections" and click "Connect with Facebook". The app lists the Pages you manage (pages_show_list). Select your Page. The app subscribes the Page to webhooks (pages_manage_metadata) and the Page shows as "Active".
+4. From a customer account, send the Page a message the bot cannot auto-answer (for example "my item arrived damaged"). The app receives it (pages_messaging), the bot escalates it, and the conversation appears in the Army KlangTECH Inbox flagged "Needs reply".
+5. In Army KlangTECH, open the Inbox and select that conversation. For a conversation whose last customer message is more than 24 hours old, the standard reply box is hidden and only the Human Agent option is shown.
+6. Click "Use Human Agent tag". A warning appears explaining the tag is only for genuine support issues within the 7-day window.
+7. Click "I understand, Continue" to confirm you are a human agent. The reply box unlocks.
+8. Type a personal reply and click Send. The message is delivered to the customer using the Human Agent tag (messaging_type=MESSAGE_TAG, tag=HUMAN_AGENT).
+9. If more than 7 days have passed since the customer's last message, the composer is hidden and no message can be sent, demonstrating that the app blocks the tag outside the allowed window.
 
 
 ## public_profile
