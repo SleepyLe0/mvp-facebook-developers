@@ -109,12 +109,17 @@ Facebook Login confirmation: The app uses Facebook Login for Business. A Page ad
 3) Test messaging (uses pages_messaging)
 - From another Facebook account, send a message to the connected Page:
   - Send "where is order 1001". The bot replies with the order status (test order numbers 1001 to 1008 are available).
-  - Send "my item arrived damaged". The message is not auto-resolved, so it is escalated: the bot replies that a human agent will follow up, and a ticket is created.
-- In the app, open Inbox then "Needs a human" to see the escalated conversation.
+  - Send "my item arrived damaged". The message is not auto-resolved, so it is escalated: the bot replies that a human agent will follow up.
+- In the app, open the Inbox. All conversations appear in one list; the escalated one is flagged "Needs reply".
 
 4) Test Human Agent tag
-- In Inbox then "Needs a human", open the escalated conversation, type a reply, tick the "I confirm I am a human agent" checkbox, and click Send.
-- The reply is delivered using messaging_type=MESSAGE_TAG, tag=HUMAN_AGENT (used only by a human agent, within the 7-day window).
+- The composer is window-aware, following Meta's rules:
+  - Within 24 hours of the customer's last message, the agent replies with the standard messaging API (no tag).
+  - Between 24 hours and 7 days, standard replies are disabled and only the Human Agent option is shown.
+  - After 7 days, the composer is hidden and no message can be sent.
+- To use the Human Agent tag, open a conversation whose last customer message is more than 24 hours old. The standard reply box is hidden; click "Use Human Agent tag".
+- A warning explains the tag is only for genuine support issues within the 7-day window. Click "I understand, Continue" to confirm you are a human agent. The reply box unlocks.
+- Type a personal reply and click Send. The reply is delivered using messaging_type=MESSAGE_TAG, tag=HUMAN_AGENT (used only by a human agent, within the 7-day window).
 
 Optional (auto-reply rules): Go to "Automations" to add an FAQ rule (topic, trigger words, reply). Messaging the Page with a trigger word then returns that reply automatically.
 
