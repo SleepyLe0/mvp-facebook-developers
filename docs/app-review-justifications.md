@@ -55,12 +55,20 @@ How to test:
 
 ## Human Agent (Advanced Access feature — requested separately)
 
-Army KlangTECH escalates customer inquiries that our automation cannot resolve to a human support agent. Because investigating an issue (for example a damaged order or a refund) can take longer than Meta's standard 24-hour window, the human agent uses the Human Agent tag to deliver their personally written reply within the permitted 7-day window. The tag is never used for automated, promotional, or bulk messages, only for a human agent responding to a specific customer inquiry. Before sending, the app requires the agent to confirm "I am a human agent", and it blocks sending once the 7-day window has expired.
+Army KlangTECH escalates customer inquiries that our automation cannot resolve to a human support agent. Because investigating an issue (for example a damaged order or a refund) can take longer than Meta's standard 24-hour window, the human agent uses the Human Agent tag to deliver their personally written reply within the permitted 7-day window. The tag is never used for automated, promotional, or bulk messages, only for a human agent responding to a specific customer inquiry.
 
-How to test:
-1. From a customer account, send the Page a message the bot cannot auto-answer. It appears in the "Needs a human" queue.
-2. In Army KlangTECH, open that conversation, read the thread, type a reply, tick the "I confirm I am a human agent" box, and send.
-3. The message is delivered to the customer using the Human Agent tag.
+The message composer is window-aware and enforces Meta's rules so the tag is only ever used when it is actually allowed:
+- Within 24 hours of the customer's last message: the agent replies with the standard messaging API (no tag). The Human Agent option is not shown.
+- Between 24 hours and 7 days: standard replies are disabled and hidden. The only way to reply is the Human Agent tag, and it is deliberately gated. The reply box starts locked. The agent must click "Use Human Agent tag", read a warning that the tag is only for genuine support issues within the 7-day window, and confirm by clicking "I understand, Continue". Only then does the reply box unlock, and the message is sent with the Human Agent tag.
+- After 7 days: the composer is hidden entirely and no message can be sent until the customer messages again.
+
+How to test (end-to-end):
+1. From a customer account, send the Page a message the bot cannot auto-answer (for example "my item arrived damaged"). The bot escalates it, and the conversation appears in the Army KlangTECH Inbox flagged "Needs reply".
+2. In Army KlangTECH, open the Inbox and select that conversation. For a conversation whose last customer message is more than 24 hours old, the standard reply box is hidden and only the Human Agent option is shown.
+3. Click "Use Human Agent tag". A warning appears explaining the tag is only for genuine support issues within the 7-day window.
+4. Click "I understand, Continue" to confirm you are a human agent. The reply box unlocks.
+5. Type a personal reply and click Send. The message is delivered to the customer using the Human Agent tag (messaging_type=MESSAGE_TAG, tag=HUMAN_AGENT).
+6. If more than 7 days have passed since the customer's last message, the composer is hidden and no message can be sent, demonstrating that the app blocks the tag outside the allowed window.
 
 
 ## public_profile
